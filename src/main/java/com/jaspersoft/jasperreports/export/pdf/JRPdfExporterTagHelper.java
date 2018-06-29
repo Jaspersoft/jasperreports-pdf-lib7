@@ -20,16 +20,17 @@ package com.jaspersoft.jasperreports.export.pdf;
 
 import java.util.Stack;
 
-import com.itextpdf.text.pdf.PdfAConformanceLevel;
-import com.itextpdf.text.pdf.PdfArray;
-import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfDictionary;
-import com.itextpdf.text.pdf.PdfName;
-import com.itextpdf.text.pdf.PdfNumber;
-import com.itextpdf.text.pdf.PdfString;
-import com.itextpdf.text.pdf.PdfStructureElement;
-import com.itextpdf.text.pdf.PdfStructureTreeRoot;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.PdfAConformanceLevel;
+import com.itextpdf.kernel.pdf.PdfArray;
+import com.itextpdf.kernel.pdf.PdfDictionary;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfName;
+import com.itextpdf.kernel.pdf.PdfNumber;
+import com.itextpdf.kernel.pdf.PdfString;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.kernel.pdf.tagging.PdfStructElem;
+import com.itextpdf.kernel.pdf.tagging.PdfStructTreeRoot;
 
 import net.sf.jasperreports.annotations.properties.Property;
 import net.sf.jasperreports.annotations.properties.PropertyScope;
@@ -266,11 +267,12 @@ public class JRPdfExporterTagHelper
 	
 	protected JRPdfExporter exporter;
 
-	protected PdfContentByte pdfContentByte;
+	protected PdfDocument pdfDocument;
+	protected PdfCanvas pdfCanvas;
 	protected PdfWriter pdfWriter;
 
-	protected PdfStructureElement allTag;
-	protected Stack<PdfStructureElement> tagStack;
+	protected PdfStructElem allTag;
+	protected Stack<PdfStructElem> tagStack;
 	protected boolean isTagEmpty = true;
 	protected int crtCrosstabRowY = -1;
 	protected int crosstabFrameDepth;
@@ -307,46 +309,46 @@ public class JRPdfExporterTagHelper
 	/**
 	 *
 	 */
-	protected void setPdfWriter(PdfWriter pdfWriter)
+	protected void setPdfDocument(PdfDocument pdfDocument)
 	{
-		this.pdfWriter = pdfWriter;
-		
+		this.pdfDocument = pdfDocument;
 		if (isTagged)
 		{
-			pdfWriter.setTagged();
+			pdfDocument.setTagged();
 		}
+		this.pdfWriter = pdfDocument.getWriter();
 	}
 	
 	/**
 	 *
 	 */
-	protected void init(PdfContentByte pdfContentByte)
+	protected void init(PdfCanvas pdfCanvas)
 	{
-		this.pdfContentByte = pdfContentByte;
+		this.pdfCanvas = pdfCanvas;
 		
 		if (isTagged)
 		{
-			PdfStructureTreeRoot root = pdfWriter.getStructureTreeRoot();
+			PdfStructTreeRoot root = pdfDocument.getStructTreeRoot();
 			
-			root.mapRole(PdfName.ALL, PdfName.SECT);
-			root.mapRole(PdfName.IMAGE, PdfName.FIGURE);
-			root.mapRole(PdfName.TEXT, PdfName.TEXT);
-			allTag = new PdfStructureElement(root, PdfName.ALL);
+			root.addRoleMapping(PdfName.All.toString(), PdfName.Sect.toString());
+			root.addRoleMapping(PdfName.Image.toString(), PdfName.Figure.toString());
+			root.addRoleMapping(PdfName.Text.toString(), PdfName.Text.toString());
+			allTag = new PdfStructElem(root, PdfName.All);
 			if (PdfAConformanceLevel.PDF_A_1A.equals(conformanceLevel))
 			{
-				root.mapRole(new PdfName("Anchor"), PdfName.NONSTRUCT);
-				root.mapRole(PdfName.TEXT, PdfName.SPAN);
+				root.addRoleMapping(new PdfName("Anchor").toString(), PdfName.NonStruct.toString());
+				root.addRoleMapping(PdfName.Text.toString(), PdfName.Span.toString());
 			}
 			else
 			{
-				root.mapRole(new PdfName("Anchor"), PdfName.TEXT);
+				root.addRoleMapping(new PdfName("Anchor").toString(), PdfName.Text.toString());
 			}
 			
 			if (language != null)
 			{
-				allTag.put(PdfName.LANG, new PdfString(language));
+				allTag.put(PdfName.Lang, new PdfString(language));
 			}
-			tagStack = new Stack<PdfStructureElement>();
+			tagStack = new Stack<PdfStructElem>();
 			tagStack.push(allTag);
 		}
 	}
@@ -355,8 +357,8 @@ public class JRPdfExporterTagHelper
 	{
 		if (isTagged)
 		{
-			PdfStructureElement textTag = new PdfStructureElement(allTag, new PdfName("Anchor"));
-			pdfContentByte.beginMarkedContentSequence(textTag);
+			PdfStructElem textTag = new PdfStructElem(allTag, new PdfName("Anchor"));
+			pdfCanvas.beginMarkedContent(textTag);
 		}
 	}
 	
@@ -364,7 +366,7 @@ public class JRPdfExporterTagHelper
 	{
 		if (isTagged)
 		{
-			pdfContentByte.endMarkedContentSequence();
+			pdfCanvas.endMarkedContent();
 		}
 	}
 
@@ -383,11 +385,11 @@ public class JRPdfExporterTagHelper
 			if (crtCrosstabRowY >= 0) //crosstab still open
 			{
 				//end the current row
-				//pdfContentByte.endMarkedContentSequence();
+				//pdfCanvas.endMarkedContent();
 				tagStack.pop();
 				
 				//end the table
-				//pdfContentByte.endMarkedContentSequence();
+				//pdfCanvas.endMarkedContent();
 				tagStack.pop();
 			}
 		}
@@ -422,7 +424,7 @@ public class JRPdfExporterTagHelper
 							//this is the first cell on a new row
 
 							//end the current row
-							//pdfContentByte.endMarkedContentSequence();
+							//pdfCanvas.endMarkedContent();
 							tagStack.pop();
 							
 							if (
@@ -432,7 +434,7 @@ public class JRPdfExporterTagHelper
 								)
 							{
 								//end the table
-								//pdfContentByte.endMarkedContentSequence();
+								//pdfCanvas.endMarkedContent();
 								tagStack.pop();
 
 								//start table
@@ -455,11 +457,11 @@ public class JRPdfExporterTagHelper
 							//normal frame outside crosstab
 							
 							//end the current row
-							//pdfContentByte.endMarkedContentSequence();
+							//pdfCanvas.endMarkedContent();
 							tagStack.pop();
 							
 							//end the table
-							//pdfContentByte.endMarkedContentSequence();
+							//pdfCanvas.endMarkedContent();
 							tagStack.pop();
 							
 							//end crosstab
@@ -497,11 +499,11 @@ public class JRPdfExporterTagHelper
 						//normal element outside crosstab
 						
 						//end the current row
-						//pdfContentByte.endMarkedContentSequence();
+						//pdfCanvas.endMarkedContent();
 						tagStack.pop();
 						
 						//end the table
-						//pdfContentByte.endMarkedContentSequence();
+						//pdfCanvas.endMarkedContent();
 						tagStack.pop();
 						
 						//end crosstab
@@ -535,11 +537,11 @@ public class JRPdfExporterTagHelper
 	{
 		if (isTagged)
 		{
-			PdfStructureElement imageTag = new PdfStructureElement(allTag, PdfName.IMAGE);
-			pdfContentByte.beginMarkedContentSequence(imageTag);
+			PdfStructElem imageTag = new PdfStructElem(allTag, PdfName.Image);
+			pdfCanvas.beginMarkedContent(imageTag);
 			if (printImage.getHyperlinkTooltip() != null)
 			{
-				imageTag.put(PdfName.ALT, new PdfString(printImage.getHyperlinkTooltip()));
+				imageTag.put(PdfName.Alt, new PdfString(printImage.getHyperlinkTooltip()));
 			}
 		}
 	}
@@ -548,7 +550,7 @@ public class JRPdfExporterTagHelper
 	{
 		if (isTagged)
 		{
-			pdfContentByte.endMarkedContentSequence();
+			pdfCanvas.endMarkedContent();
 		}
 	}
 
@@ -556,10 +558,10 @@ public class JRPdfExporterTagHelper
 	{
 		if (isTagged)
 		{
-//			PdfStructureElement parentTag = tableCellTag == null ? (tableHeaderTag == null ? allTag : tableHeaderTag): tableCellTag;
-//			PdfStructureElement textTag = new PdfStructureElement(parentTag, PdfName.TEXT);
-			PdfStructureElement textTag = new PdfStructureElement(tagStack.peek(), isHyperlink ? PdfName.LINK : PdfName.TEXT);
-			pdfContentByte.beginMarkedContentSequence(textTag);
+//			PdfStructElem parentTag = tableCellTag == null ? (tableHeaderTag == null ? allTag : tableHeaderTag): tableCellTag;
+//			PdfStructElem textTag = new PdfStructElem(parentTag, PdfName.TEXT);
+			PdfStructElem textTag = new PdfStructElem(tagStack.peek(), isHyperlink ? PdfName.Link : PdfName.Text);
+			pdfCanvas.beginMarkedContent(textTag);
 		}
 	}
 
@@ -567,7 +569,7 @@ public class JRPdfExporterTagHelper
 	{
 		if (isTagged)
 		{
-			pdfContentByte.endMarkedContentSequence();
+			pdfCanvas.endMarkedContent();
 			isTagEmpty = false;
 		}
 	}
@@ -640,8 +642,8 @@ public class JRPdfExporterTagHelper
 	{
 		if (TAG_START.equals(prop) || TAG_FULL.equals(prop))
 		{
-			PdfStructureElement headingTag = new PdfStructureElement(tagStack.peek(), pdfName);
-			//pdfContentByte.beginMarkedContentSequence(headingTag);
+			PdfStructElem headingTag = new PdfStructElem(tagStack.peek(), pdfName);
+			//pdfCanvas.beginMarkedContent(headingTag);
 			headingTag.put(PdfName.K, new PdfArray());
 			tagStack.push(headingTag);
 			isTagEmpty = true;
@@ -651,8 +653,8 @@ public class JRPdfExporterTagHelper
 
 	protected void createTableStartTag()
 	{
-		PdfStructureElement tableTag = new PdfStructureElement(allTag, PdfName.TABLE);
-		//pdfContentByte.beginMarkedContentSequence(tableTag);
+		PdfStructElem tableTag = new PdfStructElem(allTag, PdfName.Table);
+		//pdfCanvas.beginMarkedContent(tableTag);
 		tableTag.put(PdfName.K, new PdfArray());
 		tagStack.push(tableTag);
 	}
@@ -660,8 +662,8 @@ public class JRPdfExporterTagHelper
 	
 	protected void createTrStartTag()
 	{
-		PdfStructureElement tableRowTag = new PdfStructureElement(tagStack.peek(), PdfName.TABLEROW);
-		//pdfContentByte.beginMarkedContentSequence(tableRowTag);
+		PdfStructElem tableRowTag = new PdfStructElem(tagStack.peek(), PdfName.Row);
+		//pdfCanvas.beginMarkedContent(tableRowTag);
 		tableRowTag.put(PdfName.K, new PdfArray());
 		tagStack.push(tableRowTag);
 	}
@@ -669,8 +671,8 @@ public class JRPdfExporterTagHelper
 	
 	protected void createThStartTag(JRPrintElement element)
 	{
-		PdfStructureElement tableHeaderTag = new PdfStructureElement(tagStack.peek(), PdfName.TH);
-		//pdfContentByte.beginMarkedContentSequence(tableHeaderTag);
+		PdfStructElem tableHeaderTag = new PdfStructElem(tagStack.peek(), PdfName.TH);
+		//pdfCanvas.beginMarkedContent(tableHeaderTag);
 		tableHeaderTag.put(PdfName.K, new PdfArray());
 		tagStack.push(tableHeaderTag);
 		isTagEmpty = true;
@@ -681,8 +683,8 @@ public class JRPdfExporterTagHelper
 	
 	protected void createTdStartTag(JRPrintElement element)
 	{
-		PdfStructureElement tableCellTag = new PdfStructureElement(tagStack.peek(), PdfName.TD);
-		//pdfContentByte.beginMarkedContentSequence(tableCellTag);
+		PdfStructElem tableCellTag = new PdfStructElem(tagStack.peek(), PdfName.TD);
+		//pdfCanvas.beginMarkedContent(tableCellTag);
 		tableCellTag.put(PdfName.K, new PdfArray());
 		tagStack.push(tableCellTag);
 		isTagEmpty = true;
@@ -691,7 +693,7 @@ public class JRPdfExporterTagHelper
 	}
 		
 
-	protected void createSpanTags(JRPrintElement element, PdfStructureElement parentTag)
+	protected void createSpanTags(JRPrintElement element, PdfStructElem parentTag)
 	{
 		int colSpan = 0;
 		int rowSpan = 0;
@@ -715,13 +717,13 @@ public class JRPdfExporterTagHelper
 			PdfDictionary dict = new PdfDictionary();
 			if (colSpan > 1)
 			{
-				dict.put(new PdfName("ColSpan"), new PdfNumber(colSpan));
+				dict.put(PdfName.ColSpan, new PdfNumber(colSpan));
 			}
 			if (rowSpan > 1)
 			{
-				dict.put(new PdfName("RowSpan"), new PdfNumber(rowSpan));
+				dict.put(PdfName.RowSpan, new PdfNumber(rowSpan));
 			}
-			dict.put(PdfName.O, PdfName.TABLE);
+			dict.put(PdfName.O, PdfName.Table);
 			a.add(dict);
 			parentTag.put(PdfName.A, a);
 		}
@@ -730,8 +732,8 @@ public class JRPdfExporterTagHelper
 
 	protected void createListStartTag()
 	{
-		PdfStructureElement listTag = new PdfStructureElement(allTag, PdfName.L);
-		//pdfContentByte.beginMarkedContentSequence(tableTag);
+		PdfStructElem listTag = new PdfStructElem(allTag, PdfName.L);
+		//pdfCanvas.beginMarkedContent(tableTag);
 		listTag.put(PdfName.K, new PdfArray());
 		tagStack.push(listTag);
 	}
@@ -739,8 +741,8 @@ public class JRPdfExporterTagHelper
 	
 	protected void createListItemStartTag(JRPrintElement element)
 	{
-		PdfStructureElement listItemTag = new PdfStructureElement(tagStack.peek(), PdfName.LI);
-		//pdfContentByte.beginMarkedContentSequence(tableHeaderTag);
+		PdfStructElem listItemTag = new PdfStructElem(tagStack.peek(), PdfName.LI);
+		//pdfCanvas.beginMarkedContent(tableHeaderTag);
 		listItemTag.put(PdfName.K, new PdfArray());
 		tagStack.push(listItemTag);
 		isTagEmpty = true;
@@ -761,12 +763,12 @@ public class JRPdfExporterTagHelper
 			String prop = element.getPropertiesMap().getProperty(PROPERTY_TAG_LI);
 			if (TAG_END.equals(prop) || TAG_FULL.equals(prop))
 			{
-				//pdfContentByte.endMarkedContentSequence();
+				//pdfCanvas.endMarkedContent();
 				
 				if (isTagEmpty)
 				{
-					pdfContentByte.beginMarkedContentSequence(new PdfStructureElement(tagStack.peek(), PdfName.SPAN));
-					pdfContentByte.endMarkedContentSequence();
+					pdfCanvas.beginMarkedContent(new PdfStructElem(tagStack.peek(), PdfName.Span));
+					pdfCanvas.endMarkedContent();
 				}
 				
 				tagStack.pop();
@@ -775,7 +777,7 @@ public class JRPdfExporterTagHelper
 			prop = element.getPropertiesMap().getProperty(PROPERTY_TAG_L);
 			if (TAG_END.equals(prop) || TAG_FULL.equals(prop))
 			{
-				//pdfContentByte.endMarkedContentSequence();
+				//pdfCanvas.endMarkedContent();
 				tagStack.pop();
 			}
 
@@ -787,12 +789,12 @@ public class JRPdfExporterTagHelper
 					|| JRCellContents.TYPE_ROW_HEADER.equals(prop)
 					|| JRCellContents.TYPE_DATA.equals(prop)))
 			{
-				//pdfContentByte.endMarkedContentSequence();
+				//pdfCanvas.endMarkedContent();
 				
 				if (isTagEmpty)
 				{
-					pdfContentByte.beginMarkedContentSequence(new PdfStructureElement(tagStack.peek(), PdfName.SPAN));
-					pdfContentByte.endMarkedContentSequence();
+					pdfCanvas.beginMarkedContent(new PdfStructElem(tagStack.peek(), PdfName.Span));
+					pdfCanvas.endMarkedContent();
 				}
 
 				tagStack.pop();
@@ -801,12 +803,12 @@ public class JRPdfExporterTagHelper
 			prop = element.getPropertiesMap().getProperty(PROPERTY_TAG_TD);
 			if (TAG_END.equals(prop) || TAG_FULL.equals(prop))
 			{
-				//pdfContentByte.endMarkedContentSequence();
+				//pdfCanvas.endMarkedContent();
 				
 				if (isTagEmpty)
 				{
-					pdfContentByte.beginMarkedContentSequence(new PdfStructureElement(tagStack.peek(), PdfName.SPAN));
-					pdfContentByte.endMarkedContentSequence();
+					pdfCanvas.beginMarkedContent(new PdfStructElem(tagStack.peek(), PdfName.Span));
+					pdfCanvas.endMarkedContent();
 				}
 
 				tagStack.pop();
@@ -815,12 +817,12 @@ public class JRPdfExporterTagHelper
 			prop = element.getPropertiesMap().getProperty(PROPERTY_TAG_TH);
 			if (TAG_END.equals(prop) || TAG_FULL.equals(prop))
 			{
-				//pdfContentByte.endMarkedContentSequence();
+				//pdfCanvas.endMarkedContent();
 				
 				if (isTagEmpty)
 				{
-					pdfContentByte.beginMarkedContentSequence(new PdfStructureElement(tagStack.peek(), PdfName.SPAN));
-					pdfContentByte.endMarkedContentSequence();
+					pdfCanvas.beginMarkedContent(new PdfStructElem(tagStack.peek(), PdfName.Span));
+					pdfCanvas.endMarkedContent();
 				}
 				
 				tagStack.pop();
@@ -829,14 +831,14 @@ public class JRPdfExporterTagHelper
 			prop = element.getPropertiesMap().getProperty(PROPERTY_TAG_TR);
 			if (TAG_END.equals(prop) || TAG_FULL.equals(prop))
 			{
-				//pdfContentByte.endMarkedContentSequence();
+				//pdfCanvas.endMarkedContent();
 				tagStack.pop();
 			}
 
 			prop = element.getPropertiesMap().getProperty(PROPERTY_TAG_TABLE);
 			if (TAG_END.equals(prop) || TAG_FULL.equals(prop))
 			{
-				//pdfContentByte.endMarkedContentSequence();
+				//pdfCanvas.endMarkedContent();
 				tagStack.pop();
 			}
 		}
@@ -847,12 +849,12 @@ public class JRPdfExporterTagHelper
 	{
 		if (TAG_END.equals(prop) || TAG_FULL.equals(prop))
 		{
-			//pdfContentByte.endMarkedContentSequence(); 
+			//pdfCanvas.endMarkedContent(); 
 
 			if (isTagEmpty)
 			{
-				pdfContentByte.beginMarkedContentSequence(new PdfStructureElement(tagStack.peek(), PdfName.SPAN));
-				pdfContentByte.endMarkedContentSequence();
+				pdfCanvas.beginMarkedContent(new PdfStructElem  (tagStack.peek(), PdfName.Span));
+				pdfCanvas.endMarkedContent();
 			}
 
 			tagStack.pop();

@@ -29,13 +29,15 @@ import com.adobe.xmp.XMPMeta;
 import com.adobe.xmp.XMPMetaFactory;
 import com.adobe.xmp.options.PropertyOptions;
 import com.adobe.xmp.options.SerializeOptions;
-import com.itextpdf.text.Version;
-import com.itextpdf.text.pdf.PdfDate;
-import com.itextpdf.text.pdf.PdfDictionary;
-import com.itextpdf.text.pdf.PdfName;
-import com.itextpdf.text.pdf.PdfString;
-import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.text.xml.xmp.DublinCoreSchema;
+import com.itextpdf.kernel.Version;
+import com.itextpdf.kernel.pdf.PdfDate;
+import com.itextpdf.kernel.pdf.PdfDictionary;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfDocumentInfo;
+import com.itextpdf.kernel.pdf.PdfName;
+import com.itextpdf.kernel.pdf.PdfString;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.xmp.PdfConst;
 
 import net.sf.jasperreports.engine.JRRuntimeException;
 import net.sf.jasperreports.export.type.PdfaConformanceEnum;
@@ -73,9 +75,9 @@ public class PdfXmpCreator
 		return XMP_LIBRARY;
 	}
 
-	public static byte[] createXmpMetadata(PdfWriter pdfWriter, PdfaConformanceEnum pdfaConformance)
+	public static byte[] createXmpMetadata(PdfDocument document, PdfaConformanceEnum pdfaConformance)
 	{
-		XmpWriter writer = new XmpWriter(pdfWriter, pdfaConformance);
+		XmpWriter writer = new XmpWriter(document, pdfaConformance);
 		return writer.createXmpMetadata();
 	}
 
@@ -106,13 +108,15 @@ class XmpWriter
 
 	private static final String XMP_CREATOR_TOOL = "CreatorTool";
 	
-	private final PdfDictionary info;
+	private final PdfDocumentInfo info;
 	private final PdfaConformanceEnum pdfaConformance;
+	private PdfWriter pdfWriter;
 	
-	XmpWriter(PdfWriter pdfWriter, PdfaConformanceEnum pdfaConformance)
+	XmpWriter(PdfDocument document, PdfaConformanceEnum pdfaConformance)
 	{
-		this.info = pdfWriter.getInfo();
+		this.info = document.getDocumentInfo();
 		this.pdfaConformance = pdfaConformance;
+		this.pdfWriter = document.getWriter();
 	}
 	
 	byte[] createXmpMetadata()
@@ -122,7 +126,7 @@ class XmpWriter
 			XMPMeta xmp = XMPMetaFactory.create();
 			xmp.setObjectName("");
 
-			xmp.setProperty(XMPConst.NS_DC, DublinCoreSchema.FORMAT, FORMAT_PDF);
+			xmp.setProperty(XMPConst.NS_DC, PdfConst.Format, FORMAT_PDF);
 			xmp.setProperty(XMPConst.NS_PDF, PDF_PRODUCER, Version.getInstance().getVersion());
 
 			if (pdfaConformance == PdfaConformanceEnum.PDFA_1A)
@@ -136,41 +140,41 @@ class XmpWriter
 				xmp.setProperty(XMPConst.NS_PDFA_ID, PDFA_CONFORMANCE, PDFA_CONFORMANCE_B);
 			}
 
-			xmp.setProperty(XMPConst.NS_XMP, XMP_CREATE_DATE, ((PdfDate) info.get(PdfName.CREATIONDATE)).getW3CDate());
-			xmp.setProperty(XMPConst.NS_XMP, XMP_MODIFY_DATE, ((PdfDate) info.get(PdfName.MODDATE)).getW3CDate());
+			xmp.setProperty(XMPConst.NS_XMP, XMP_CREATE_DATE, ((PdfDate) info.get(PdfName.CreationDate)).getW3CDate());
+			xmp.setProperty(XMPConst.NS_XMP, XMP_MODIFY_DATE, ((PdfDate) info.get(PdfName.ModDate)).getW3CDate());
 
-			String title = extractInfo(PdfName.TITLE);
+			String title = extractInfo(PdfName.Title);
 			if (title != null)
 			{
-				xmp.setLocalizedText(XMPConst.NS_DC, DublinCoreSchema.TITLE, 
+				xmp.setLocalizedText(XMPConst.NS_DC, PdfConst.Title, 
 						//FIXME use the tag language?
 						XMPConst.X_DEFAULT, XMPConst.X_DEFAULT, title);
 			}
 
-			String author = extractInfo(PdfName.AUTHOR);
+			String author = extractInfo(PdfName.Author);
 			if (author != null)
 			{
 				//FIXME cache the options?
 				PropertyOptions arrayOrdered = new PropertyOptions().setArrayOrdered(true);
-				xmp.appendArrayItem(XMPConst.NS_DC, DublinCoreSchema.CREATOR, arrayOrdered, author, null);
+				xmp.appendArrayItem(XMPConst.NS_DC, PdfConst.Creator, arrayOrdered, author, null);
 			}
 
-			String subject = extractInfo(PdfName.SUBJECT);
+			String subject = extractInfo(PdfName.Subject);
 			if (subject != null)
 			{
 				PropertyOptions array = new PropertyOptions().setArray(true);
-				xmp.appendArrayItem(XMPConst.NS_DC, DublinCoreSchema.SUBJECT, array, subject, null);
-				xmp.setLocalizedText(XMPConst.NS_DC, DublinCoreSchema.DESCRIPTION, 
+				xmp.appendArrayItem(XMPConst.NS_DC, PdfConst.Subject, array, subject, null);
+				xmp.setLocalizedText(XMPConst.NS_DC, PdfConst.Description, 
 						XMPConst.X_DEFAULT, XMPConst.X_DEFAULT, subject);
 			}
 
-			String keywords = extractInfo(PdfName.KEYWORDS);
+			String keywords = extractInfo(PdfName.Keywords);
 			if (keywords != null)
 			{
 				xmp.setProperty(XMPConst.NS_PDF, PDF_KEYWORDS, keywords);
 			}
 
-			String creator = extractInfo(PdfName.CREATOR);
+			String creator = extractInfo(PdfName.Creator);
 			if (creator != null)
 			{
 				xmp.setProperty(XMPConst.NS_XMP, XMP_CREATOR_TOOL, creator);
@@ -191,7 +195,8 @@ class XmpWriter
 	
 	private String extractInfo(PdfName key)
 	{
-		PdfString value = (PdfString) info.get(key);
-		return value == null ? null : value.toUnicodeString();
+		String value = info.getMoreInfo(key.getValue());
+		//return value == null ? null : value.toUnicodeString();
+		return value;
 	}
 }

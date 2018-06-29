@@ -100,12 +100,30 @@
 			<scope>compile</scope>
 			<optional>true</optional>
 		</dependency>
+	    <dependency>
+	        <groupId>com.itextpdf</groupId>
+	        <artifactId>kernel</artifactId>
+	        <version>7.1.2</version>
+	        <scope>compile</scope>
+	    </dependency>
+	    <dependency>
+	        <groupId>com.itextpdf</groupId>
+	        <artifactId>io</artifactId>
+	        <version>7.1.2</version>
+	        <scope>compile</scope>
+	    </dependency>
+	    <dependency>
+	        <groupId>com.itextpdf</groupId>
+	        <artifactId>layout</artifactId>
+	        <version>7.1.2</version>
+	        <scope>compile</scope>
+	    </dependency>
 		<dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>kernel</artifactId>
-			<version>7.1.2</version>
-			<scope>compile</scope>
-		</dependency>
+	        <groupId>com.itextpdf</groupId>
+	        <artifactId>pdfa</artifactId>
+	        <version>7.1.2</version>
+	        <scope>compile</scope>
+	    </dependency>
 		<dependency>
 			<groupId>com.adobe.xmp</groupId>
 			<artifactId>xmpcore</artifactId>

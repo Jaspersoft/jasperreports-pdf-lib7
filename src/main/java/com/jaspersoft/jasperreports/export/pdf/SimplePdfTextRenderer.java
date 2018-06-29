@@ -18,13 +18,11 @@
  */
 package com.jaspersoft.jasperreports.export.pdf;
 
+import java.io.IOException;
 import java.text.AttributedString;
 
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.ColumnText;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.layout.property.BaseDirection;
+import com.itextpdf.layout.property.TextAlignment;
 
 import net.sf.jasperreports.engine.JRPrintText;
 import net.sf.jasperreports.engine.JRRuntimeException;
@@ -63,7 +61,7 @@ public class SimplePdfTextRenderer extends AbstractPdfTextRenderer
 	@Override
 	public void render()
 	{
-		ColumnText colText = new ColumnText(pdfContentByte);
+		ColumnText colText = new ColumnText(pdfCanvas);
 		colText.setSimpleColumn(
 			getPhrase(styledText, text),
 			x + leftPadding,
@@ -79,20 +77,20 @@ public class SimplePdfTextRenderer extends AbstractPdfTextRenderer
 				- height
 				+ bottomPadding,
 			0,//text.getLineSpacingFactor(),// * text.getFont().getSize(),
-			horizontalAlignment == Element.ALIGN_JUSTIFIED_ALL ? Element.ALIGN_JUSTIFIED : horizontalAlignment
+			horizontalAlignment == TextAlignment.JUSTIFIED_ALL ? TextAlignment.JUSTIFIED : horizontalAlignment
 			);
 
 		colText.setLeading(0, text.getLineSpacingFactor());// * text.getFont().getSize());
 		colText.setRunDirection(
 			text.getRunDirectionValue() == RunDirectionEnum.LTR
-			? PdfWriter.RUN_DIRECTION_LTR : PdfWriter.RUN_DIRECTION_RTL
+			? BaseDirection.LEFT_TO_RIGHT : BaseDirection.RIGHT_TO_LEFT
 			);
 
 		try
 		{
 			colText.go();
 		}
-		catch (DocumentException e)
+		catch (IOException e)
 		{
 			throw new JRRuntimeException(e);
 		}

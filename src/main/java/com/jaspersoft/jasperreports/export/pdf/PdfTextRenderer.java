@@ -18,9 +18,10 @@
  */
 package com.jaspersoft.jasperreports.export.pdf;
 
-import com.itextpdf.text.DocumentException;
+import java.io.IOException;
+
+import com.itextpdf.layout.property.BaseDirection;
 import com.itextpdf.text.pdf.ColumnText;
-import com.itextpdf.text.pdf.PdfWriter;
 
 import net.sf.jasperreports.engine.JRRuntimeException;
 import net.sf.jasperreports.engine.JasperReportsContext;
@@ -75,14 +76,14 @@ public class PdfTextRenderer extends AbstractPdfTextRenderer
 		colText.setLeading(lineHeight);
 		colText.setRunDirection(
 			text.getRunDirectionValue() == RunDirectionEnum.LTR
-			? PdfWriter.RUN_DIRECTION_LTR : PdfWriter.RUN_DIRECTION_RTL
+			? BaseDirection.LEFT_TO_RIGHT : BaseDirection.RIGHT_TO_LEFT
 			);
 
 		try
 		{
 			colText.go();
 		}
-		catch (DocumentException e)
+		catch (IOException e)
 		{
 			throw new JRRuntimeException(e);
 		}

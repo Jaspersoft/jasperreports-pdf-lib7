@@ -29,8 +29,10 @@ import java.text.CharacterIterator;
 import net.sf.jasperreports.engine.JRRuntimeException;
 import net.sf.jasperreports.export.PdfReportConfiguration;
 
-import com.itextpdf.text.SplitCharacter;
-import com.itextpdf.text.pdf.PdfChunk;
+import com.itextpdf.io.font.otf.GlyphLine;
+import com.itextpdf.layout.element.Text;
+import com.itextpdf.layout.splitting.DefaultSplitCharacters;
+import com.itextpdf.layout.splitting.ISplitCharacters;
 
 
 /**
@@ -41,7 +43,7 @@ import com.itextpdf.text.pdf.PdfChunk;
  * 
  * @see PdfReportConfiguration#isForceLineBreakPolicy()
  */
-public class BreakIteratorSplitCharacter implements SplitCharacter
+public class BreakIteratorSplitCharacter implements ISplitCharacters
 {
 
 	private char[] chars;
@@ -60,8 +62,7 @@ public class BreakIteratorSplitCharacter implements SplitCharacter
 		this.breakIter = breakIter;
 	}
 
-	@Override
-	public boolean isSplitCharacter(int startIdx, int current, int endIdx, char[] cc, PdfChunk[] ck)
+	public boolean isSplitCharacter(int startIdx, int current, int endIdx, char[] cc, Text[] ck)
 	{
 		++current;
 		if (current == endIdx)
@@ -104,13 +105,15 @@ public class BreakIteratorSplitCharacter implements SplitCharacter
 				|| currentChar(current - 1, cc, ck) <= ' ';
 	}
 
-	protected char currentChar(int current, char[] cc, PdfChunk[] ck)
+	protected char currentChar(int current, char[] cc, Text[] ck)
 	{
 		char currentCh = cc[current];
 		if (ck != null)
 		{
-			PdfChunk chunk = ck[Math.min(current, ck.length - 1)];
-			currentCh = (char)chunk.getUnicodeEquivalent(currentCh);
+			//FIXME: find a replacement for chunk.getUnicodeEquivalent()
+			
+//			Text chunk = ck[Math.min(current, ck.length - 1)];
+//			currentCh = (char)chunk.getUnicodeEquivalent(currentCh);
 		}
 		return currentCh;
 	}
@@ -229,6 +232,11 @@ public class BreakIteratorSplitCharacter implements SplitCharacter
 				throw new JRRuntimeException(e);
 			}
 		}
+	}
+
+	@Override
+	public boolean isSplitCharacter(GlyphLine text, int glyphPos) {
+		return new DefaultSplitCharacters().isSplitCharacter(text, glyphPos);
 	}
 
 }

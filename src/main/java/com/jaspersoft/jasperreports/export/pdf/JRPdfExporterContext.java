@@ -18,7 +18,7 @@
  */
 package com.jaspersoft.jasperreports.export.pdf;
 
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.PdfWriter;
 
 import net.sf.jasperreports.engine.export.JRExporterContext;
 
