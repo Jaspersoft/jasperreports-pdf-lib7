@@ -46,6 +46,7 @@ import org.apache.commons.logging.LogFactory;
 import com.itextpdf.io.font.FontConstants;
 import com.itextpdf.io.font.constants.FontStyles;
 import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.colors.IccBased;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.geom.Rectangle;
@@ -596,10 +597,13 @@ public class JRPdfExporter extends JRAbstractExporter<PdfReportConfiguration, Pd
 		try
 		{
 			PdfaConformanceEnum pdfaConformance = configuration.getPdfaConformance();
+			pdfWriter = new PdfWriter(os);
+			
 			boolean gotPdfa = false;
 			if (PdfaConformanceEnum.PDFA_1A == pdfaConformance)
 			{
-				pdfWriter = PdfAWriter.getInstance(document, os, PdfAConformanceLevel.PDF_A_1A);
+				pdfWriter = PdfWriter.getInstance(document, os, PdfAConformanceLevel.PDF_A_1A);
+				pdfDocument = 
 				tagHelper.setConformanceLevel(PdfAConformanceLevel.PDF_A_1A);
 				gotPdfa = true;
 			}
@@ -804,14 +808,12 @@ public class JRPdfExporter extends JRAbstractExporter<PdfReportConfiguration, Pd
 				
 				pageFormat = jasperPrint.getPageFormat(0);
 
-				setPageSize(null);
-				
 				List<JRPrintPage> pages = jasperPrint.getPages();
 				if (pages != null && pages.size() > 0)
 				{
 					if (items.size() > 1)
 					{
-						pdfDocument.addNewPage();
+						pdfDocument.addNewPage(getPageSize(null));
 
 						if( isCreatingBatchModeBookmarks )
 						{
@@ -841,16 +843,16 @@ public class JRPdfExporter extends JRAbstractExporter<PdfReportConfiguration, Pd
 
 						pageFormat = jasperPrint.getPageFormat(pageIndex);
 						
-						if (sizePageToContent || oldPageFormat != pageFormat)
-						{
-							setPageSize(sizePageToContent ? page : null);
-						}
+//						if (sizePageToContent || oldPageFormat != pageFormat)
+//						{
+//							setPageSize(sizePageToContent ? page : null);
+//						}
 						
-						PdfPage pdfPage = pdfDocument.addNewPage();
+						PdfPage pdfPage = pdfDocument.addNewPage(getPageSize(sizePageToContent ? page : null));
 						
 						pdfCanvas = new PdfCanvas(pdfPage);
 
-						pdfCanvas.setLineCap(2);//pdfCanvas.LINE_CAP_PROJECTING_SQUARE since iText 1.02b
+						pdfCanvas.setLineCapStyle(2);//pdfCanvas.LINE_CAP_PROJECTING_SQUARE since iText 1.02b
 
 						writePageAnchor(pageIndex);
 						
@@ -940,7 +942,7 @@ public class JRPdfExporter extends JRAbstractExporter<PdfReportConfiguration, Pd
 	/**
 	 *
 	 */
-	protected void setPageSize(JRPrintPage page) throws JRException, IOException
+	protected PageSize getPageSize(JRPrintPage page) throws JRException, IOException
 	{
 		int pageWidth = 0; 
 		int pageHeight = 0;
@@ -974,7 +976,7 @@ public class JRPdfExporter extends JRAbstractExporter<PdfReportConfiguration, Pd
 			pageSize = new Rectangle(pageWidth, pageHeight);
 			break;
 		}
-		document.setPageSize(pageSize);
+		return new PageSize(pageSize);
 	}
 
 	/**
@@ -3024,6 +3026,28 @@ public class JRPdfExporter extends JRAbstractExporter<PdfReportConfiguration, Pd
 			default: break;
 		}
 		return pdfVersion;
+	}
+	
+	protected PdfDictionary getOutputContent(PdfExporterConfiguration configuration) {
+		
+		String iccProfilePath = configuration.getIccProfilePath();
+		if (iccProfilePath != null) {
+			PdfDictionary pdfDictionary = new PdfDictionary();
+			pdfDictionary.put(PdfName.OutputConditionIdentifier, new PdfString("sRGB IEC61966-2.1"));
+			pdfDictionary.put(PdfName.Info, new PdfString("sRGB IEC61966-2.1"));
+			pdfDictionary.put(PdfName.S, PdfName.GTS_PDFA1);
+			InputStream iccIs = RepositoryUtil.getInstance(jasperReportsContext).getInputStreamFromLocation(iccProfilePath);
+			IccBased pdfICCBased = new IccBased(iccIs);
+			//FIXME: remove(PdfName.Alternate) and indirect reference
+			//pdfICCBased.remove(PdfName.Alternate);
+			//pdfDictionary.put(PdfName.DestOutputProfile, pdfWriter.addToBody(pdfICCBased).getIndirectReference());
+			pdfDictionary.put(PdfName.DestOutputProfile, pdfICCBased);
+
+			pdfDocument.getCatalog().put(PdfName.OutputIntents, new PdfArray(pdfDictionary));
+		} else {
+			throw new JRPdfaIccProfileNotFoundException();
+		}
+		
 	}
 	
 	protected static class FontKey

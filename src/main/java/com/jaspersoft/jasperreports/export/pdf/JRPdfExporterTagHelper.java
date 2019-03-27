@@ -333,7 +333,8 @@ public class JRPdfExporterTagHelper
 			root.addRoleMapping(PdfName.All.toString(), PdfName.Sect.toString());
 			root.addRoleMapping(PdfName.Image.toString(), PdfName.Figure.toString());
 			root.addRoleMapping(PdfName.Text.toString(), PdfName.Text.toString());
-			allTag = new PdfStructElem(root, PdfName.All);
+			allTag = new PdfStructElem(pdfDocument, PdfName.All);
+			root.addKid(allTag);
 			if (PdfAConformanceLevel.PDF_A_1A.equals(conformanceLevel))
 			{
 				root.addRoleMapping(new PdfName("Anchor").toString(), PdfName.NonStruct.toString());
@@ -357,8 +358,10 @@ public class JRPdfExporterTagHelper
 	{
 		if (isTagged)
 		{
-			PdfStructElem textTag = new PdfStructElem(allTag, new PdfName("Anchor"));
-			pdfCanvas.beginMarkedContent(textTag);
+			PdfName name = new PdfName("Anchor");
+			PdfStructElem textTag = new PdfStructElem(pdfDocument, name);
+			allTag.addKid(textTag);
+			pdfCanvas.beginMarkedContent(name, textTag.getPdfObject());
 		}
 	}
 	
@@ -537,8 +540,9 @@ public class JRPdfExporterTagHelper
 	{
 		if (isTagged)
 		{
-			PdfStructElem imageTag = new PdfStructElem(allTag, PdfName.Image);
-			pdfCanvas.beginMarkedContent(imageTag);
+			PdfStructElem imageTag = new PdfStructElem(pdfDocument, PdfName.Image);
+			allTag.addKid(imageTag);
+			pdfCanvas.beginMarkedContent(PdfName.Image, imageTag.getPdfObject());
 			if (printImage.getHyperlinkTooltip() != null)
 			{
 				imageTag.put(PdfName.Alt, new PdfString(printImage.getHyperlinkTooltip()));
@@ -560,8 +564,10 @@ public class JRPdfExporterTagHelper
 		{
 //			PdfStructElem parentTag = tableCellTag == null ? (tableHeaderTag == null ? allTag : tableHeaderTag): tableCellTag;
 //			PdfStructElem textTag = new PdfStructElem(parentTag, PdfName.TEXT);
-			PdfStructElem textTag = new PdfStructElem(tagStack.peek(), isHyperlink ? PdfName.Link : PdfName.Text);
-			pdfCanvas.beginMarkedContent(textTag);
+			PdfName name = isHyperlink ? PdfName.Link : PdfName.Text;
+			PdfStructElem textTag = new PdfStructElem(pdfDocument, name);
+			tagStack.peek().addKid(textTag);
+			pdfCanvas.beginMarkedContent(name, textTag.getPdfObject());
 		}
 	}
 
@@ -642,7 +648,8 @@ public class JRPdfExporterTagHelper
 	{
 		if (TAG_START.equals(prop) || TAG_FULL.equals(prop))
 		{
-			PdfStructElem headingTag = new PdfStructElem(tagStack.peek(), pdfName);
+			PdfStructElem headingTag = new PdfStructElem(pdfDocument, pdfName);
+			tagStack.peek().addKid(headingTag);
 			//pdfCanvas.beginMarkedContent(headingTag);
 			headingTag.put(PdfName.K, new PdfArray());
 			tagStack.push(headingTag);
@@ -653,7 +660,8 @@ public class JRPdfExporterTagHelper
 
 	protected void createTableStartTag()
 	{
-		PdfStructElem tableTag = new PdfStructElem(allTag, PdfName.Table);
+		PdfStructElem tableTag = new PdfStructElem(pdfDocument, PdfName.Table);
+		allTag.addKid(tableTag);
 		//pdfCanvas.beginMarkedContent(tableTag);
 		tableTag.put(PdfName.K, new PdfArray());
 		tagStack.push(tableTag);
@@ -662,7 +670,8 @@ public class JRPdfExporterTagHelper
 	
 	protected void createTrStartTag()
 	{
-		PdfStructElem tableRowTag = new PdfStructElem(tagStack.peek(), PdfName.Row);
+		PdfStructElem tableRowTag = new PdfStructElem(pdfDocument, PdfName.Row);
+		tagStack.peek().addKid(tableRowTag);
 		//pdfCanvas.beginMarkedContent(tableRowTag);
 		tableRowTag.put(PdfName.K, new PdfArray());
 		tagStack.push(tableRowTag);
@@ -671,7 +680,8 @@ public class JRPdfExporterTagHelper
 	
 	protected void createThStartTag(JRPrintElement element)
 	{
-		PdfStructElem tableHeaderTag = new PdfStructElem(tagStack.peek(), PdfName.TH);
+		PdfStructElem tableHeaderTag = new PdfStructElem(pdfDocument, PdfName.TH);
+		tagStack.peek().addKid(tableHeaderTag);
 		//pdfCanvas.beginMarkedContent(tableHeaderTag);
 		tableHeaderTag.put(PdfName.K, new PdfArray());
 		tagStack.push(tableHeaderTag);
@@ -683,7 +693,8 @@ public class JRPdfExporterTagHelper
 	
 	protected void createTdStartTag(JRPrintElement element)
 	{
-		PdfStructElem tableCellTag = new PdfStructElem(tagStack.peek(), PdfName.TD);
+		PdfStructElem tableCellTag = new PdfStructElem(pdfDocument, PdfName.TD);
+		tagStack.peek().addKid(tableCellTag);
 		//pdfCanvas.beginMarkedContent(tableCellTag);
 		tableCellTag.put(PdfName.K, new PdfArray());
 		tagStack.push(tableCellTag);
@@ -732,7 +743,8 @@ public class JRPdfExporterTagHelper
 
 	protected void createListStartTag()
 	{
-		PdfStructElem listTag = new PdfStructElem(allTag, PdfName.L);
+		PdfStructElem listTag = new PdfStructElem(pdfDocument, PdfName.L);
+		allTag.addKid(listTag);
 		//pdfCanvas.beginMarkedContent(tableTag);
 		listTag.put(PdfName.K, new PdfArray());
 		tagStack.push(listTag);
@@ -741,7 +753,8 @@ public class JRPdfExporterTagHelper
 	
 	protected void createListItemStartTag(JRPrintElement element)
 	{
-		PdfStructElem listItemTag = new PdfStructElem(tagStack.peek(), PdfName.LI);
+		PdfStructElem listItemTag = new PdfStructElem(pdfDocument, PdfName.LI);
+		tagStack.peek().addKid(listItemTag);
 		//pdfCanvas.beginMarkedContent(tableHeaderTag);
 		listItemTag.put(PdfName.K, new PdfArray());
 		tagStack.push(listItemTag);
@@ -767,7 +780,7 @@ public class JRPdfExporterTagHelper
 				
 				if (isTagEmpty)
 				{
-					pdfCanvas.beginMarkedContent(new PdfStructElem(tagStack.peek(), PdfName.Span));
+					pdfCanvas.beginMarkedContent(PdfName.Span, tagStack.peek().getPdfObject());
 					pdfCanvas.endMarkedContent();
 				}
 				
@@ -793,7 +806,7 @@ public class JRPdfExporterTagHelper
 				
 				if (isTagEmpty)
 				{
-					pdfCanvas.beginMarkedContent(new PdfStructElem(tagStack.peek(), PdfName.Span));
+					pdfCanvas.beginMarkedContent(PdfName.Span, tagStack.peek().getPdfObject());
 					pdfCanvas.endMarkedContent();
 				}
 
@@ -807,7 +820,7 @@ public class JRPdfExporterTagHelper
 				
 				if (isTagEmpty)
 				{
-					pdfCanvas.beginMarkedContent(new PdfStructElem(tagStack.peek(), PdfName.Span));
+					pdfCanvas.beginMarkedContent(PdfName.Span, tagStack.peek().getPdfObject());
 					pdfCanvas.endMarkedContent();
 				}
 
@@ -821,7 +834,7 @@ public class JRPdfExporterTagHelper
 				
 				if (isTagEmpty)
 				{
-					pdfCanvas.beginMarkedContent(new PdfStructElem(tagStack.peek(), PdfName.Span));
+					pdfCanvas.beginMarkedContent(PdfName.Span, tagStack.peek().getPdfObject());
 					pdfCanvas.endMarkedContent();
 				}
 				
@@ -853,7 +866,7 @@ public class JRPdfExporterTagHelper
 
 			if (isTagEmpty)
 			{
-				pdfCanvas.beginMarkedContent(new PdfStructElem  (tagStack.peek(), PdfName.Span));
+				pdfCanvas.beginMarkedContent(PdfName.Span, tagStack.peek().getPdfObject());
 				pdfCanvas.endMarkedContent();
 			}
 

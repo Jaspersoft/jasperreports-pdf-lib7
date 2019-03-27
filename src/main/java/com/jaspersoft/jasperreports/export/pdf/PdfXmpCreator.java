@@ -30,12 +30,9 @@ import com.adobe.xmp.XMPMetaFactory;
 import com.adobe.xmp.options.PropertyOptions;
 import com.adobe.xmp.options.SerializeOptions;
 import com.itextpdf.kernel.Version;
-import com.itextpdf.kernel.pdf.PdfDate;
-import com.itextpdf.kernel.pdf.PdfDictionary;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfDocumentInfo;
 import com.itextpdf.kernel.pdf.PdfName;
-import com.itextpdf.kernel.pdf.PdfString;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.xmp.PdfConst;
 
@@ -140,8 +137,8 @@ class XmpWriter
 				xmp.setProperty(XMPConst.NS_PDFA_ID, PDFA_CONFORMANCE, PDFA_CONFORMANCE_B);
 			}
 
-			xmp.setProperty(XMPConst.NS_XMP, XMP_CREATE_DATE, ((PdfDate) info.get(PdfName.CreationDate)).getW3CDate());
-			xmp.setProperty(XMPConst.NS_XMP, XMP_MODIFY_DATE, ((PdfDate) info.get(PdfName.ModDate)).getW3CDate());
+			xmp.setProperty(XMPConst.NS_XMP, XMP_CREATE_DATE, (info.getMoreInfo(PdfName.CreationDate.getValue())));
+			xmp.setProperty(XMPConst.NS_XMP, XMP_MODIFY_DATE, (info.getMoreInfo(PdfName.ModDate.getValue())));
 
 			String title = extractInfo(PdfName.Title);
 			if (title != null)
