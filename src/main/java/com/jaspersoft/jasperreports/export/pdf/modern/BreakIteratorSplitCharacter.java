@@ -24,10 +24,6 @@
 package com.jaspersoft.jasperreports.export.pdf.modern;
 
 import java.text.BreakIterator;
-import java.text.CharacterIterator;
-
-import net.sf.jasperreports.engine.JRRuntimeException;
-import net.sf.jasperreports.export.PdfReportConfiguration;
 
 import com.itextpdf.io.font.otf.GlyphLine;
 import com.itextpdf.layout.splitting.ISplitCharacters;
@@ -40,8 +36,10 @@ import com.itextpdf.layout.splitting.ISplitCharacters;
 public class BreakIteratorSplitCharacter implements ISplitCharacters
 {
 
-	private char[] chars;
-	private int start, end;
+	private GlyphLine lastGlyphLine;
+	private String text;
+	private int[] glyphsCharStart;
+	
 	private boolean[] boundary;
 	private int lastBoundary;
 	private final BreakIterator breakIter;
@@ -57,45 +55,27 @@ public class BreakIteratorSplitCharacter implements ISplitCharacters
 	}
 
 	@Override
-	public boolean isSplitCharacter(GlyphLine text, int glyphPos)
+	public boolean isSplitCharacter(GlyphLine glyphLine, int glyphPos)
 	{
-        if (!text.get(glyphPos).hasValidUnicode()) {
+        if (!glyphLine.get(glyphPos).hasValidUnicode())
+        {
             return false;
         }
-        int charCode = text.get(glyphPos).getUnicode();
-        
-        
-		// TODO Auto-generated method stub
-		return false;
-	}
 
-	@Override
-	public boolean isSplitCharacter(int startIdx, int current, int endIdx, char[] cc, PdfChunk[] ck)
-	{
-		++current;
-		if (current == endIdx)
+		if (this.lastGlyphLine != glyphLine)
 		{
-			return false;
-		}
-
-		if (!(chars == cc && this.start == startIdx && this.end == endIdx))
-		{
-			chars = cc;
-			this.start = startIdx;
-			this.end = endIdx;
-
-			breakIter.setText(new ArrayCharIterator(cc, startIdx, endIdx));
-
-			boundary = new boolean[endIdx - startIdx + 1];
+			loadChars(glyphLine);
 
 			lastBoundary = breakIter.first();
 			if (lastBoundary != BreakIterator.DONE)
 			{
-				boundary[lastBoundary - startIdx] = true;
+				boundary[lastBoundary] = true;
 			}
 		}
 
-		while (current > lastBoundary)
+		int glyphCharStart = glyphsCharStart[glyphPos];
+		int glyphCharEnd = glyphsCharStart[glyphPos + 1];
+		while (glyphCharEnd > lastBoundary)
 		{
 			lastBoundary = breakIter.next();
 
@@ -105,139 +85,44 @@ public class BreakIteratorSplitCharacter implements ISplitCharacters
 			}
 			else
 			{
-				boundary[lastBoundary - startIdx] = true;
+				boundary[lastBoundary] = true;
 			}
 		}
 
-		return boundary[current - startIdx]
-				|| currentChar(current - 1, cc, ck) <= ' ';
-	}
-
-	protected char currentChar(int current, char[] cc, PdfChunk[] ck)
-	{
-		char currentCh = cc[current];
-		if (ck != null)
+		for (int i = glyphCharStart; i < glyphCharEnd; ++i)
 		{
-			PdfChunk chunk = ck[Math.min(current, ck.length - 1)];
-			currentCh = (char)chunk.getUnicodeEquivalent(currentCh);
+			if (boundary[i + 1] || text.charAt(i) <= ' ')
+			{
+				return true;
+			}
 		}
-		return currentCh;
+		return false;
 	}
 	
-	protected static class ArrayCharIterator implements CharacterIterator
+	private void loadChars(GlyphLine glyphLine)
 	{
-		public static final String EXCEPTION_MESSAGE_KEY_INVALID_INDEX = "util.array.char.iterator.invalid.index";
-
-		private char[] chars;
-		private int start;
-		private int end;
-		private int curr;
-
-		public ArrayCharIterator(char[] chars, int start, int end)
+		lastGlyphLine = glyphLine;
+		
+		int glyphCount = glyphLine.size();
+		glyphsCharStart = new int[glyphCount + 1];
+		int charCount = 0;
+		StringBuilder chars = new StringBuilder();
+		for (int glyphIdx = 0; glyphIdx < glyphCount; ++glyphIdx)
 		{
-			this.chars = chars;
-			this.start = start;
-			this.end = end;
-		}
-
-		@Override
-		public char first()
-		{
-			curr = start;
-			return current();
-		}
-
-		@Override
-		public char last()
-		{
-			if (end == start)
+			glyphsCharStart[glyphIdx] = charCount;
+			
+			char[] glyphChars = glyphLine.get(glyphIdx).getChars();
+			if (glyphChars != null)
 			{
-				curr = end;
-			}
-			else
-			{
-				curr = end - 1;
-			}
-			return current();
-		}
-
-		@Override
-		public char setIndex(int position)
-		{
-			if (position < start || position > end)
-			{
-				throw 
-					new JRRuntimeException(
-						EXCEPTION_MESSAGE_KEY_INVALID_INDEX,
-						new Object[]{position, start, end});
-			}
-			curr = position;
-			return current();
-		}
-
-		@Override
-		public char current()
-		{
-			if (curr < start || curr >= end)
-			{
-				return DONE;
-			}
-			return chars[curr];
-		}
-
-		@Override
-		public char next()
-		{
-			if (curr >= end - 1)
-			{
-				curr = end;
-				return DONE;
-			}
-			curr++;
-			return chars[curr];
-		}
-
-		@Override
-		public char previous()
-		{
-			if (curr <= start)
-			{
-				return DONE;
-			}
-			curr--;
-			return chars[curr];
-		}
-
-		@Override
-		public int getBeginIndex()
-		{
-			return start;
-		}
-
-		@Override
-		public int getEndIndex()
-		{
-			return end;
-		}
-
-		@Override
-		public int getIndex()
-		{
-			return curr;
-		}
-
-		@Override
-		public Object clone()
-		{
-			try
-			{
-				return super.clone();
-			}
-			catch (CloneNotSupportedException e)
-			{
-				throw new JRRuntimeException(e);
+				charCount += glyphChars.length;
+				chars.append(glyphChars);
 			}
 		}
+		glyphsCharStart[glyphCount] = charCount;
+		
+		text = chars.toString();
+		breakIter.setText(text);
+		boundary = new boolean[charCount + 1];
 	}
 
 }

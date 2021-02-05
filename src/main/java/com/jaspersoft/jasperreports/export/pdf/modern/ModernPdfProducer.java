@@ -313,8 +313,7 @@ public class ModernPdfProducer implements PdfProducer
 		if (splitCharacter != null)
 		{
 			//TODO use line break offsets if available?
-			//TODO lucian
-			//chunk.setSplitCharacter(splitCharacter);
+			textElement.setSplitCharacters(splitCharacter);
 		}
 		
 		return new ModernTextChunk(this, textElement, font);
