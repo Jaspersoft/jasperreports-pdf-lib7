@@ -162,7 +162,7 @@ public class ModernPdfProducer implements PdfProducer
 	@Override
 	public PdfContent createPdfContent()
 	{
-		pdfContent = new ModernPdfContent(writer.getPdfWriter());
+		pdfContent = new ModernPdfContent();
 		return pdfContent;
 	}
 

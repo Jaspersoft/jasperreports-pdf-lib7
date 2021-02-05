@@ -21,7 +21,6 @@ package com.jaspersoft.jasperreports.export.pdf.modern;
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
 
-import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvasConstants;
 import com.itextpdf.kernel.pdf.extgstate.PdfExtGState;
@@ -37,7 +36,6 @@ import net.sf.jasperreports.export.pdf.PdfContent;
 public class ModernPdfContent implements PdfContent
 {
 	
-	private PdfWriter pdfWriter;
 	private PdfCanvas pdfCanvas;
 	
 	private PdfExtGState[] fillAlphaStates = new PdfExtGState[256];
@@ -46,9 +44,8 @@ public class ModernPdfContent implements PdfContent
 	private PdfExtGState[] strokeAlphaStates = new PdfExtGState[256];
 	private boolean strokeAlphaSet = false;
 
-	public ModernPdfContent(PdfWriter pdfWriter)
+	public ModernPdfContent()
 	{
-		this.pdfWriter = pdfWriter;
 	}
 
 	public PdfCanvas getPdfCanvas()
@@ -220,7 +217,7 @@ public class ModernPdfContent implements PdfContent
 	@Override
 	public void setLiteral(String string)
 	{
-		pdfContentByte.setLiteral(string);
+		pdfCanvas.getContentStream().getOutputStream().writeString(string);
 	}
 
 	@Override
