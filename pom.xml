@@ -20,9 +20,9 @@
 		<url>https://www.jaspersoft.com/</url>
 	</organization>
 	<scm>
-		<connection>scm:git:https://github.com/Jaspersoft/jasperreports-pdf-lib5.git</connection>
+		<connection>scm:git:https://github.com/Jaspersoft/jasperreports-pdf-lib7.git</connection>
 		<tag>1-0-0</tag>
-		<url>https://github.com/Jaspersoft/jasperreports-pdf-lib5</url>
+		<url>https://github.com/Jaspersoft/jasperreports-pdf-lib7</url>
 	</scm>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
