@@ -16,28 +16,32 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.jaspersoft.jasperreports.export.pdf;
+package com.jaspersoft.jasperreports.export.pdf.modern;
 
-import com.itextpdf.kernel.pdf.PdfWriter;
-
-import net.sf.jasperreports.engine.export.JRExporterContext;
-
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.renderer.IRenderer;
+import com.itextpdf.layout.renderer.ParagraphRenderer;
 
 /**
- * A context that represents information about an PDF export process.
- * 
- * @see JRPdfExporter
  * 
  * @author Lucian Chirita (lucianc@users.sourceforge.net)
  */
-public interface JRPdfExporterContext extends JRExporterContext
+public class ModernParagraphRenderer extends ParagraphRenderer
 {
 
-	/**
-	 * Returns the {@link PdfWriter} instance used by the exporter.
-	 * 
-	 * @return the exporter's {@link PdfWriter} instance
-	 */
-	PdfWriter getPdfWriter();
+	public ModernParagraphRenderer(Paragraph modelElement)
+	{
+		super(modelElement);
+	}
+	
+    public IRenderer getNextRenderer()
+    {
+        return new ModernParagraphRenderer((Paragraph) modelElement);
+    }
+	
+    public Float getYLine()
+    {
+    	return getLastYLineRecursively();
+    }
 	
 }

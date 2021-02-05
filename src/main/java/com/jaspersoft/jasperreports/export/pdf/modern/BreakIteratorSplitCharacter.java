@@ -1,6 +1,6 @@
 /*
  * JasperReports - Free Java Reporting Library.
- * Copyright (C) 2001 - 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2001 - 2019 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,7 +21,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with JasperReports. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.jaspersoft.jasperreports.export.pdf;
+package com.jaspersoft.jasperreports.export.pdf.modern;
 
 import java.text.BreakIterator;
 import java.text.CharacterIterator;
@@ -30,18 +30,12 @@ import net.sf.jasperreports.engine.JRRuntimeException;
 import net.sf.jasperreports.export.PdfReportConfiguration;
 
 import com.itextpdf.io.font.otf.GlyphLine;
-import com.itextpdf.layout.element.Text;
-import com.itextpdf.layout.splitting.DefaultSplitCharacters;
 import com.itextpdf.layout.splitting.ISplitCharacters;
 
 
 /**
- * Implementation of {@link com.lowagie.text.SplitCharacter SplitCharacter} that
- * uses the same logic as AWT to break texts into lines.
  * 
  * @author Lucian Chirita (lucianc@users.sourceforge.net)
- * 
- * @see PdfReportConfiguration#isForceLineBreakPolicy()
  */
 public class BreakIteratorSplitCharacter implements ISplitCharacters
 {
@@ -62,7 +56,21 @@ public class BreakIteratorSplitCharacter implements ISplitCharacters
 		this.breakIter = breakIter;
 	}
 
-	public boolean isSplitCharacter(int startIdx, int current, int endIdx, char[] cc, Text[] ck)
+	@Override
+	public boolean isSplitCharacter(GlyphLine text, int glyphPos)
+	{
+        if (!text.get(glyphPos).hasValidUnicode()) {
+            return false;
+        }
+        int charCode = text.get(glyphPos).getUnicode();
+        
+        
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isSplitCharacter(int startIdx, int current, int endIdx, char[] cc, PdfChunk[] ck)
 	{
 		++current;
 		if (current == endIdx)
@@ -105,15 +113,13 @@ public class BreakIteratorSplitCharacter implements ISplitCharacters
 				|| currentChar(current - 1, cc, ck) <= ' ';
 	}
 
-	protected char currentChar(int current, char[] cc, Text[] ck)
+	protected char currentChar(int current, char[] cc, PdfChunk[] ck)
 	{
 		char currentCh = cc[current];
 		if (ck != null)
 		{
-			//FIXME: find a replacement for chunk.getUnicodeEquivalent()
-			
-//			Text chunk = ck[Math.min(current, ck.length - 1)];
-//			currentCh = (char)chunk.getUnicodeEquivalent(currentCh);
+			PdfChunk chunk = ck[Math.min(current, ck.length - 1)];
+			currentCh = (char)chunk.getUnicodeEquivalent(currentCh);
 		}
 		return currentCh;
 	}
@@ -232,11 +238,6 @@ public class BreakIteratorSplitCharacter implements ISplitCharacters
 				throw new JRRuntimeException(e);
 			}
 		}
-	}
-
-	@Override
-	public boolean isSplitCharacter(GlyphLine text, int glyphPos) {
-		return new DefaultSplitCharacters().isSplitCharacter(text, glyphPos);
 	}
 
 }
