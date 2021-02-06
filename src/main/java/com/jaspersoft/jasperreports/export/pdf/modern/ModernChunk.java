@@ -30,12 +30,10 @@ import net.sf.jasperreports.export.pdf.PdfChunk;
 public class ModernChunk implements PdfChunk
 {
 
-	private ModernPdfProducer pdfProducer;
 	protected AbstractElement<?> element;
 
-	public ModernChunk(ModernPdfProducer pdfProducer, AbstractElement<?> element)
+	public ModernChunk(AbstractElement<?> element)
 	{
-		this.pdfProducer = pdfProducer;
 		this.element = element;
 	}
 
@@ -47,8 +45,7 @@ public class ModernChunk implements PdfChunk
 	@Override
 	public void setLocalDestination(String anchorName)
 	{
-		//TODO lucian
-		//chunk.setLocalDestination(anchorName);
+		element.setDestination(anchorName);
 	}
 
 	@Override

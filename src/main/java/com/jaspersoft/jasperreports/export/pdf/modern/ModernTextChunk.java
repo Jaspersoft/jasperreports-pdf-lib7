@@ -57,9 +57,9 @@ public class ModernTextChunk extends ModernChunk implements PdfTextChunk
 	private Text text;
 	private PdfFontAttributes fontAttributes;
 
-	public ModernTextChunk(ModernPdfProducer pdfProducer, Text text, PdfFontAttributes fontAttributes)
+	public ModernTextChunk(Text text, PdfFontAttributes fontAttributes)
 	{
-		super(pdfProducer, text);
+		super(text);
 		
 		this.text = text;
 		this.fontAttributes = fontAttributes;

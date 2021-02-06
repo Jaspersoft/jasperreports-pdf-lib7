@@ -315,14 +315,14 @@ public class ModernPdfProducer implements PdfProducer
 			textElement.setSplitCharacters(splitCharacter);
 		}
 		
-		return new ModernTextChunk(this, textElement, font);
+		return new ModernTextChunk(textElement, font);
 	}
 
 	@Override
 	public PdfChunk createChunk(PdfImage imageContainer)
 	{
 		Image image = ((ModernPdfImage) imageContainer).getImage();
-		return new ModernChunk(this, image);
+		return new ModernChunk(image);
 	}
 	
 	@Override
