@@ -308,7 +308,6 @@ public class ModernPdfProducer implements PdfProducer
 		{
 			textElement.setItalic();
 		}
-		//TODO lucian underline?
 		
 		if (splitCharacter != null)
 		{
