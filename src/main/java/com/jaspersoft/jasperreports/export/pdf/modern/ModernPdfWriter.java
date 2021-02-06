@@ -64,6 +64,7 @@ public class ModernPdfWriter implements PdfDocumentWriter
 
 	private String language;
 	private boolean displayMetadataTitle;
+	private boolean noSpaceCharRation;
 
 	public ModernPdfWriter(ModernPdfProducer pdfProducer, OutputStream output)
 	{
@@ -160,8 +161,12 @@ public class ModernPdfWriter implements PdfDocumentWriter
 	@Override
 	public void setNoSpaceCharRatio()
 	{
-		//TODO lucian
-		//pdfWriter.setSpaceCharRatio(PdfWriter.NO_SPACE_CHAR_RATIO);
+		this.noSpaceCharRation = true;
+	}
+	
+	public boolean isNoSpaceCharRatio()
+	{
+		return noSpaceCharRation;
 	}
 
 	@Override

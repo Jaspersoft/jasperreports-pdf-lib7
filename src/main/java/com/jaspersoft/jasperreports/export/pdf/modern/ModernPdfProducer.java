@@ -329,6 +329,10 @@ public class ModernPdfProducer implements PdfProducer
 	public PdfPhrase createPhrase()
 	{
 		Paragraph paragraph = new Paragraph();
+		if (writer.isNoSpaceCharRatio())
+		{
+			paragraph.setSpacingRatio(1f);
+		}
 		return new ModernPhrase(this, paragraph);
 	}
 
