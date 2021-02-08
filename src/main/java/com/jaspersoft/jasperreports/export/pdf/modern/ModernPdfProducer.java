@@ -45,6 +45,8 @@ import com.itextpdf.layout.element.AbstractElement;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Text;
+import com.itextpdf.layout.property.OverflowPropertyValue;
+import com.itextpdf.layout.property.Property;
 import com.itextpdf.layout.splitting.ISplitCharacters;
 
 import net.sf.jasperreports.engine.JRException;
@@ -340,6 +342,12 @@ public class ModernPdfProducer implements PdfProducer
 	public PdfPhrase createPhrase(PdfChunk chunk)
 	{
 		Paragraph paragraph = new Paragraph();
+		if (((ModernChunk) chunk).getElement() instanceof Image)
+		{
+			//workaround for floating point errors that causes images not to appear after scale
+			paragraph.setProperty(Property.OVERFLOW_X, OverflowPropertyValue.HIDDEN);
+			paragraph.setProperty(Property.OVERFLOW_Y, OverflowPropertyValue.HIDDEN);
+		}
 		ModernPhrase modernPhrase = new ModernPhrase(this, paragraph);
 		modernPhrase.add(chunk);
 		return modernPhrase;
