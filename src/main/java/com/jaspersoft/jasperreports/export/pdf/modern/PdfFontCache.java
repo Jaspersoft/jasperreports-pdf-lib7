@@ -18,10 +18,16 @@
  */
 package com.jaspersoft.jasperreports.export.pdf.modern;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.itextpdf.io.font.FontProgram;
+import com.itextpdf.io.font.FontProgramFactory;
 import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+
+import net.sf.jasperreports.engine.JRRuntimeException;
 
 /**
  * 
@@ -29,13 +35,6 @@ import com.itextpdf.kernel.font.PdfFont;
  */
 public class PdfFontCache
 {
-
-	private static final PdfFontCache INSTANCE = new PdfFontCache();
-	
-	public static PdfFontCache instance()
-	{
-		return INSTANCE;
-	}
 	
 	private static String cacheFontKey(String pdfFontName, String pdfEncoding, boolean isPdfEmbedded)
 	{
@@ -43,26 +42,83 @@ public class PdfFontCache
 		return pdfFontName + "\n" + pdfEncoding + "\n" + isPdfEmbedded;
 	}
 	
+	private static Map<String, FontProgram> fontProgramCache = new HashMap<>();
+	
+	private static FontProgram getCachedFontProgram(String key)
+	{
+		synchronized (fontProgramCache)
+		{
+			return fontProgramCache.get(key);
+		}
+	}
+	
+	private static FontProgram cacheFontProgram(String key, FontProgram fontProgram)
+	{
+		synchronized (fontProgramCache)
+		{
+			FontProgram cachedFontProgram = fontProgramCache.get(key);
+			if (cachedFontProgram == null)
+			{
+				fontProgramCache.put(key, fontProgram);
+				cachedFontProgram = fontProgram;
+			}
+			return cachedFontProgram;
+		}
+	}
+	
 	private Map<String, PdfFont> fontCache = new HashMap<>();
 
 	public PdfFontCache()
 	{
-		// TODO Auto-generated constructor stub
 	}
 	
 	public PdfFont getCachedFont(String pdfFontName, String pdfEncoding, boolean isPdfEmbedded)
 	{
 		String fontKey = cacheFontKey(pdfFontName, pdfEncoding, isPdfEmbedded);
+		PdfFont pdfFont;
 		synchronized (fontCache)
 		{
-			return fontCache.get(fontKey);
+			pdfFont = fontCache.get(fontKey);
 		}
+		
+		if (pdfFont == null)
+		{
+			FontProgram fontProgram = getCachedFontProgram(fontKey);
+			if (fontProgram != null)
+			{
+				pdfFont = PdfFontFactory.createFont(fontProgram, pdfEncoding, isPdfEmbedded);
+				pdfFont = cacheFont(fontKey, pdfFont);
+			}
+		}
+		return pdfFont;
 	}
 	
-	public PdfFont cacheFont(String pdfFontName, String pdfEncoding, boolean isPdfEmbedded, PdfFont font)
+	public PdfFont cacheFont(String pdfFontName, String pdfEncoding, boolean isPdfEmbedded, byte[] fontData)
 	{
 		String fontKey = cacheFontKey(pdfFontName, pdfEncoding, isPdfEmbedded);
-		synchronized (fontKey)
+		FontProgram fontProgram = getCachedFontProgram(fontKey);
+		if (fontProgram == null)
+		{
+			try
+			{
+				fontProgram = FontProgramFactory.createFont(fontData, true);
+			}
+			catch (IOException e)
+			{
+				throw new JRRuntimeException(e);
+			}
+			
+			fontProgram = cacheFontProgram(fontKey, fontProgram);
+		}
+		
+		PdfFont pdfFont = PdfFontFactory.createFont(fontProgram, pdfEncoding, isPdfEmbedded);
+		pdfFont = cacheFont(fontKey, pdfFont);
+		return pdfFont;
+	}
+
+	protected PdfFont cacheFont(String fontKey, PdfFont font)
+	{
+		synchronized (fontCache)
 		{
 			PdfFont cachedFont = fontCache.get(fontKey);
 			if (cachedFont == null)

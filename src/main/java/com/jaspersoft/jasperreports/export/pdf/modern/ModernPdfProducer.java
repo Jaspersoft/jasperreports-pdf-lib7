@@ -29,11 +29,8 @@ import java.util.Map;
 import com.itextpdf.forms.PdfAcroForm;
 import com.itextpdf.forms.fields.PdfButtonFormField;
 import com.itextpdf.forms.fields.PdfFormField;
-import com.itextpdf.forms.fields.PdfTextFormField;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
-import com.itextpdf.kernel.colors.DeviceRgb;
-import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfOutline;
@@ -41,21 +38,19 @@ import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.AbstractElement;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.property.OverflowPropertyValue;
 import com.itextpdf.layout.property.Property;
 import com.itextpdf.layout.splitting.ISplitCharacters;
+import com.lowagie.text.pdf.PdfTemplate;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRPrintText;
-import net.sf.jasperreports.engine.JRRuntimeException;
 import net.sf.jasperreports.engine.PrintPageFormat;
 import net.sf.jasperreports.engine.export.AbstractPdfTextRenderer;
 import net.sf.jasperreports.engine.export.PdfTextRenderer;
-import net.sf.jasperreports.engine.export.type.PdfFieldTypeEnum;
 import net.sf.jasperreports.engine.util.JRStyledText;
 import net.sf.jasperreports.engine.util.NullOutputStream;
 import net.sf.jasperreports.export.pdf.PdfChunk;
@@ -83,6 +78,8 @@ public class ModernPdfProducer implements PdfProducer
 	
 	private PdfProducerContext context;
 	
+	private PdfFontCache fontCache;
+	
 	private ModernPdfStructure pdfStructure;
 	
 	private ModernDocument document;
@@ -106,6 +103,7 @@ public class ModernPdfProducer implements PdfProducer
 	public ModernPdfProducer(PdfProducerContext context)
 	{
 		this.context = context;
+		this.fontCache = new PdfFontCache();
 		this.currentPageNumber = 0;
 	}
 
@@ -292,7 +290,7 @@ public class ModernPdfProducer implements PdfProducer
 	
 	public PdfFontAttributes getFont(Map<Attribute,Object> attributes, Locale locale)
 	{
-		ModernFontRecipient fontRecipient = new ModernFontRecipient();
+		ModernFontRecipient fontRecipient = new ModernFontRecipient(fontCache);
 		context.setFont(attributes, locale, false, fontRecipient);
 		PdfFontAttributes font = fontRecipient.getFont();
 		return font;

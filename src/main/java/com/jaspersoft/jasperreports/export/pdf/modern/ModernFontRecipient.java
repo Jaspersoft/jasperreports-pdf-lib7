@@ -36,10 +36,12 @@ import net.sf.jasperreports.export.pdf.PdfFontStyle;
 public class ModernFontRecipient implements FontRecipient
 {
 
+	private PdfFontCache fontCache;
 	private PdfFontAttributes font;
 
-	public ModernFontRecipient()
+	public ModernFontRecipient(PdfFontCache fontCache)
 	{
+		this.fontCache = fontCache;
 	}
 	
 	@Override
@@ -65,7 +67,7 @@ public class ModernFontRecipient implements FontRecipient
 			// check if FontFactory didn't find the font
 			if (pdfFont == null || pdfFont.getFontProgram() == null)
 			{
-				pdfFont = PdfFontCache.instance().getCachedFont(pdfFontName, pdfEncoding, isPdfEmbedded);
+				pdfFont = fontCache.getCachedFont(pdfFontName, pdfEncoding, isPdfEmbedded);
 			}
 			
 			this.font = pdfFont == null ? null
@@ -88,17 +90,7 @@ public class ModernFontRecipient implements FontRecipient
 			float size, PdfFontStyle pdfFontStyle, Color forecolor,
 			byte[] fontData)
 	{
-		PdfFont pdfFont;
-		try
-		{
-			pdfFont = PdfFontFactory.createFont(fontData, pdfEncoding, isPdfEmbedded, true);
-		}
-		catch(IOException e)
-		{
-			throw new JRRuntimeException(e);
-		}
-		
-		pdfFont = PdfFontCache.instance().cacheFont(pdfFontName, pdfEncoding, isPdfEmbedded, pdfFont);
+		PdfFont pdfFont = fontCache.cacheFont(pdfFontName, pdfEncoding, isPdfEmbedded, fontData);
 
 		font = new PdfFontAttributes(pdfFont, size, pdfFontStyle, forecolor);
 	}
