@@ -54,6 +54,7 @@ import net.sf.jasperreports.engine.JRPrintText;
 import net.sf.jasperreports.engine.JRRuntimeException;
 import net.sf.jasperreports.engine.PrintPageFormat;
 import net.sf.jasperreports.engine.export.AbstractPdfTextRenderer;
+import net.sf.jasperreports.engine.export.PdfTextRenderer;
 import net.sf.jasperreports.engine.export.type.PdfFieldTypeEnum;
 import net.sf.jasperreports.engine.util.JRStyledText;
 import net.sf.jasperreports.engine.util.NullOutputStream;
@@ -248,11 +249,20 @@ public class ModernPdfProducer implements PdfProducer
 	}
 
 	@Override
-	public AbstractPdfTextRenderer getCustomTextRenderer(
+	public AbstractPdfTextRenderer getTextRenderer(
 			JRPrintText text, JRStyledText styledText, Locale textLocale,
 			boolean awtIgnoreMissingFont, boolean defaultIndentFirstLine, boolean defaultJustifyLastLine)
 	{
-		return null;
+		//TODO lucian fix the line spacing in the simple text renderer
+		//for now always using the AWT based text renderer which is slower
+		AbstractPdfTextRenderer textRenderer = 
+				new PdfTextRenderer(
+					context.getJasperReportsContext(), 
+					awtIgnoreMissingFont, 
+					defaultIndentFirstLine,
+					defaultJustifyLastLine
+					);//FIXMENOW make some reusable instances here and below
+		return textRenderer;
 	}
 
 	@Override
