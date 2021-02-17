@@ -18,13 +18,40 @@
  */
 package com.jaspersoft.jasperreports.export.pdf.modern;
 
+import java.awt.Dimension;
+import java.awt.geom.Dimension2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.text.AttributedCharacterIterator.Attribute;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
+import org.apache.batik.anim.dom.SVGDOMImplementation;
+import org.apache.batik.dom.GenericDOMImplementation;
+import org.apache.batik.svggen.SVGGeneratorContext;
+import org.apache.batik.svggen.SVGGraphics2D;
+import org.apache.batik.svggen.SVGGraphics2DIOException;
+import org.apache.batik.util.XMLResourceDescriptor;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import com.itextpdf.forms.PdfAcroForm;
 import com.itextpdf.forms.fields.PdfButtonFormField;
@@ -37,6 +64,7 @@ import com.itextpdf.kernel.pdf.PdfOutline;
 import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.kernel.pdf.xobject.PdfFormXObject;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
@@ -44,13 +72,16 @@ import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.property.OverflowPropertyValue;
 import com.itextpdf.layout.property.Property;
 import com.itextpdf.layout.splitting.ISplitCharacters;
-import com.lowagie.text.pdf.PdfTemplate;
+import com.itextpdf.svg.converter.SvgConverter;
 
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRPrintImage;
 import net.sf.jasperreports.engine.JRPrintText;
+import net.sf.jasperreports.engine.JRRuntimeException;
 import net.sf.jasperreports.engine.PrintPageFormat;
 import net.sf.jasperreports.engine.export.AbstractPdfTextRenderer;
 import net.sf.jasperreports.engine.export.PdfTextRenderer;
+import net.sf.jasperreports.engine.type.ModeEnum;
 import net.sf.jasperreports.engine.util.JRStyledText;
 import net.sf.jasperreports.engine.util.NullOutputStream;
 import net.sf.jasperreports.export.pdf.PdfChunk;
@@ -59,7 +90,6 @@ import net.sf.jasperreports.export.pdf.PdfDocument;
 import net.sf.jasperreports.export.pdf.PdfDocumentWriter;
 import net.sf.jasperreports.export.pdf.PdfFontStyle;
 import net.sf.jasperreports.export.pdf.PdfImage;
-import net.sf.jasperreports.export.pdf.PdfImageTemplate;
 import net.sf.jasperreports.export.pdf.PdfOutlineEntry;
 import net.sf.jasperreports.export.pdf.PdfPhrase;
 import net.sf.jasperreports.export.pdf.PdfProducer;
@@ -68,6 +98,9 @@ import net.sf.jasperreports.export.pdf.PdfRadioCheck;
 import net.sf.jasperreports.export.pdf.PdfStructure;
 import net.sf.jasperreports.export.pdf.PdfTextChunk;
 import net.sf.jasperreports.export.pdf.PdfTextField;
+import net.sf.jasperreports.renderers.DataRenderable;
+import net.sf.jasperreports.renderers.DimensionRenderable;
+import net.sf.jasperreports.renderers.Graphics2DRenderable;
 
 /**
  * 
@@ -287,6 +320,142 @@ public class ModernPdfProducer implements PdfProducer
 		pdfImage.setRotationDegrees(angle);
 		return pdfImage;
 	}
+
+	@Override
+	public void drawImage(JRPrintImage printImage, Graphics2DRenderable renderer, boolean forceSvgShapes, 
+			double templateWidth, double templateHeight,
+			int translateX, int translateY, double angle, 
+			double renderWidth, double renderHeight, 
+			float ratioX, float ratioY, float x, float y) throws JRException, IOException
+	{
+		if (renderer instanceof DataRenderable)
+		{
+			//must be a SVG
+			drawSVGImage(printImage, renderer, 
+					templateWidth, templateHeight, 
+					translateX, translateY, 
+					ratioX, ratioY, x, y);
+		}
+		else
+		{
+			drawGraphics2DImage(printImage, renderer, forceSvgShapes, 
+					translateX, translateY, angle, 
+					renderWidth, renderHeight, 
+					ratioX, ratioY, x, y);
+		}
+	}
+
+	protected void drawSVGImage(JRPrintImage printImage, Graphics2DRenderable renderer, 
+			double templateWidth, double templateHeight, 
+			int translateX, int translateY, float ratioX, 
+			float ratioY, float x, float y)
+			throws JRException, IOException
+	{
+		byte[] svgData = ((DataRenderable) renderer).getData(context.getJasperReportsContext());
+		
+		String parser = XMLResourceDescriptor.getXMLParserClassName();
+		SAXSVGDocumentFactory documentFactory = new SAXSVGDocumentFactory(parser);
+		org.w3c.dom.Document svgDocument = documentFactory.createDocument("image.svg", 
+				new ByteArrayInputStream(svgData));
+		Node svgNode = svgDocument.getElementsByTagName("svg").item(0);
+		
+		DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+		org.w3c.dom.Document wrappingDoc = domImpl.createDocument(SVGDOMImplementation.SVG_NAMESPACE_URI, "svg", null);
+		Element svgRoot = wrappingDoc.getDocumentElement();
+		
+		//TODO lucian rotation, etc
+		switch (printImage.getScaleImageValue())
+		{
+		case FILL_FRAME:
+			Dimension2D dimension = renderer instanceof DimensionRenderable
+					? ((DimensionRenderable) renderer).getDimension(context.getJasperReportsContext())
+					: null;
+			if (dimension != null)
+			{
+				svgRoot.setAttributeNS(null, "viewBox", 
+						"0 0 " + dimension.getWidth() + " " + dimension.getHeight());
+			}
+			svgRoot.setAttributeNS(null, "preserveAspectRatio", "none");
+			break;
+		case CLIP:
+			svgRoot.setAttributeNS(null, "viewBox", 
+					(-translateX) + " " + (-translateY) + " " + ((int) templateWidth) + " " + ((int) templateHeight));
+		default:
+			break;
+		}
+		
+		svgRoot.setAttributeNS(null, "width", Integer.toString((int) templateWidth));
+		svgRoot.setAttributeNS(null, "height", Integer.toString((int) templateHeight));
+		
+		Element graphicsNode = wrappingDoc.createElement("g");
+		Node svgImportNode = wrappingDoc.importNode(svgNode, true);
+		graphicsNode.appendChild(svgImportNode);
+		svgRoot.appendChild(graphicsNode);
+		
+		byte[] wrappingSvgData;
+		try
+		{
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			ByteArrayOutputStream svgOutput = new ByteArrayOutputStream();
+			Result output = new StreamResult(svgOutput);
+			Source input = new DOMSource(wrappingDoc);
+			transformer.transform(input, output);
+			wrappingSvgData = svgOutput.toByteArray();
+		}
+		catch (TransformerFactoryConfigurationError | TransformerException e)
+		{
+			throw new JRRuntimeException(e);
+		}
+		
+		ByteArrayInputStream svgStream = new ByteArrayInputStream(wrappingSvgData);
+		PdfFormXObject image = SvgConverter.convertToXObject(svgStream, document.getDocument().getPdfDocument());
+		getPdfCanvas().addXObjectWithTransformationMatrix(image, ratioX * 96 / 72, 0f, 0f, ratioY * 96 / 72, x, y);
+	}
+
+	protected void drawGraphics2DImage(JRPrintImage printImage, Graphics2DRenderable renderer, boolean forceSvgShapes,
+			int translateX, int translateY, double angle, 
+			double renderWidth, double renderHeight, 
+			float ratioX, float ratioY, float x, float y)
+			throws JRException, SVGGraphics2DIOException, UnsupportedEncodingException, IOException
+	{
+		DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+		org.w3c.dom.Document svgDoc = domImpl.createDocument(SVGDOMImplementation.SVG_NAMESPACE_URI, "svg", null);		
+		SVGGeneratorContext svgContext = SVGGeneratorContext.createDefault(svgDoc);
+		SVGGraphics2D svgGraphics = new SVGGraphics2D(svgContext, forceSvgShapes);
+		svgGraphics.setSVGCanvasSize(new Dimension((int) renderWidth, (int) renderHeight));
+
+		StringWriter svgOutput = new StringWriter();
+		try
+		{
+			svgGraphics.translate(translateX, translateY);
+
+			if (angle != 0)
+			{
+				svgGraphics.rotate(angle);
+			}
+			
+			if (printImage.getModeValue() == ModeEnum.OPAQUE)
+			{
+				svgGraphics.setColor(printImage.getBackcolor());
+				svgGraphics.fillRect(0, 0, (int) renderWidth, (int) renderHeight);
+			}
+
+			renderer.render(context.getJasperReportsContext(), svgGraphics, 
+					new Rectangle2D.Double(0, 0, renderWidth, renderHeight));
+			
+			svgGraphics.stream(svgOutput, false);
+		}
+		finally
+		{
+			svgGraphics.dispose();
+		}
+		
+		byte[] svgData = svgOutput.getBuffer().toString().getBytes(SVGGraphics2D.DEFAULT_XML_ENCODING);
+		
+		ByteArrayInputStream svgStream = new ByteArrayInputStream(svgData);
+		PdfFormXObject image = SvgConverter.convertToXObject(svgStream, document.getDocument().getPdfDocument());
+		getPdfCanvas().addXObjectWithTransformationMatrix(image, ratioX * 96 / 72, 0f, 0f, ratioY * 96 / 72, x, y);
+	}
 	
 	public PdfFontAttributes getFont(Map<Attribute,Object> attributes, Locale locale)
 	{
@@ -359,13 +528,6 @@ public class ModernPdfProducer implements PdfProducer
 		ModernPhrase modernPhrase = new ModernPhrase(this, paragraph);
 		modernPhrase.add(chunk);
 		return modernPhrase;
-	}
-	
-	@Override
-	public PdfImageTemplate createImageTemplate(float templateWidth, float templateHeight)
-	{
-		PdfTemplate template = pdfContent.getPdfContentByte().createTemplate(templateWidth, templateHeight);
-		return new ModernImageTemplate(this, template);
 	}
 
 	@Override
