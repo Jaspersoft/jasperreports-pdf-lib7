@@ -26,7 +26,8 @@ import org.testng.annotations.Test;
 
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.xml.JRPrintXmlLoader;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
+import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 
@@ -50,7 +51,7 @@ public class PdfExportTest
 	@Test
 	public void testSomething() throws JRException
 	{
-		JasperPrint jasperPrint = (JasperPrint)JRPrintXmlLoader.load("src/test/resources/FirstJasper.jrpxml");
+		JasperPrint jasperPrint = (JasperPrint) JRLoader.loadObject(new File("src/test/resources/FirstJasper.jrprint"));
 
 		File destFile = new File(outputDir, jasperPrint.getName() + ".pdf");
 
