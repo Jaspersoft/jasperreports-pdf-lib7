@@ -19,7 +19,7 @@ jars and setting a configuration property in jasperreports.properties.
 The configuration property that needs to be set is:
 
 ~~~
-net.sf.jasperreports.export.pdf.producer.factory=com.jaspersoft.jasperreports.export.pdf.modern.ModernPdfProducerFactor
+net.sf.jasperreports.export.pdf.producer.factory=com.jaspersoft.jasperreports.export.pdf.modern.ModernPdfProducerFactory
 ~~~
 
 The following jars need to present on the classpath:
