@@ -38,6 +38,11 @@
 			<name>JasperReports CE Snapshots</name>
 			<url>https://jaspersoft.jfrog.io/jaspersoft/jr-ce-snapshots</url>
 		</repository>
+		<repository>
+			<id>jaspersoft-third-party</id>
+			<name>Jaspersoft Third Party Artifacts</name>
+			<url>https://jaspersoft.jfrog.io/jaspersoft/third-party-ce-artifacts</url>
+		</repository>
 	</repositories>
 	<build>
 		<plugins>
