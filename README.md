@@ -22,6 +22,18 @@ The configuration property that needs to be set is:
 net.sf.jasperreports.export.pdf.producer.factory=com.jaspersoft.jasperreports.export.pdf.modern.ModernPdfProducerFactory
 ~~~
 
+In **JasperSoft Studio** go to `File -> Properties -> JasperSoft Studio -> Properties -> Configure Workspace Settings` and add a new property with
+
+Property Name
+~~~
+net.sf.jasperreports.export.pdf.producer.factory
+~~~
+and Value
+~~~
+com.jaspersoft.jasperreports.export.pdf.modern.ModernPdfProducerFactory
+~~~
+
+
 The following jars need to present on the classpath:
 
 * jasperreports-pdf-lib7-{x.y.z}.jar (published by this project)
