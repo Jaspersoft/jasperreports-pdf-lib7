@@ -25,7 +25,7 @@ net.sf.jasperreports.export.pdf.producer.factory=com.jaspersoft.jasperreports.ex
 ### JasperSoft Studio
 
 #### Add Jaspersoft Property
-Jaspersoft Studio Properties can either be set for the entiere ***workspace*** or a ***project***:
+Jaspersoft Studio Properties can either be set for the entire ***workspace*** or a specific ***project***:
 
 Go to `Project -> Properties -> JasperSoft Studio -> Properties` and choose either 
 
