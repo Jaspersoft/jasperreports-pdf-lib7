@@ -33,7 +33,7 @@ Go to `Project -> Properties -> JasperSoft Studio -> Properties` and choose eith
 
 or `Use project Settings`
 
-In the property list search for `pdf.producer factory`.
+In the property list search for `pdf.producer.factory`.
 The Property `net.sf.jasperreports.export.pdf.producer.factory` should appear.
 
 If the Property is ***not*** present your Jaspersoft installation is likely not supported (< 8.0.0).
