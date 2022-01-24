@@ -22,17 +22,44 @@ The configuration property that needs to be set is:
 net.sf.jasperreports.export.pdf.producer.factory=com.jaspersoft.jasperreports.export.pdf.modern.ModernPdfProducerFactory
 ~~~
 
-In **JasperSoft Studio** go to `File -> Properties -> JasperSoft Studio -> Properties -> Configure Workspace Settings` and add a new property with
+### JasperSoft Studio
 
-Property Name
-~~~
-net.sf.jasperreports.export.pdf.producer.factory
-~~~
-and Value
+#### Add Jaspersoft Property
+Jaspersoft Studio Properties can either be set for the entiere ***workspace*** or a ***project***:
+
+Go to `Project -> Properties -> JasperSoft Studio -> Properties` and choose either 
+
+`Configure Workspace Settings` -> `Configure Workspace Settings` 
+
+or `Use project Settings`
+
+In the property list search for `pdf.producer factory`.
+The Property `net.sf.jasperreports.export.pdf.producer.factory` should appear.
+
+If the Property is ***not*** present your Jaspersoft installation is likely not supported (< 8.0.0).
+
+Change the default value for `net.sf.jasperreports.export.pdf.producer.factory` to
 ~~~
 com.jaspersoft.jasperreports.export.pdf.modern.ModernPdfProducerFactory
 ~~~
 
+#### Add classpath entries
+
+The classpath entries in Eclipse / Jaspersoft Studio are ***project specific*** so they need to be set for any project, that wants to use the new pdf exporter.
+Right click on a project and select `Properties` or in an open project select `Project -> Properties` from the menu bar.
+
+Go to `Java Build Path` and select `Libraries`.
+
+Add all the required jar files here.
+(see Required Jar Files)
+
+### Jaspersoft Reports Server
+
+~~~java
+// TODO
+~~~
+
+### Required Jar Files
 
 The following jars need to present on the classpath:
 
