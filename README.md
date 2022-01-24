@@ -22,8 +22,25 @@ The configuration property that needs to be set is:
 net.sf.jasperreports.export.pdf.producer.factory=com.jaspersoft.jasperreports.export.pdf.modern.ModernPdfProducerFactory
 ~~~
 
-### JasperSoft Studio
+## Installation
 
+The installation of the plugin consists of 3 basic steps:
+1. Deploying the plugin artifact in the local .m2 repository.
+2. Adding the configuration property to the jaspersoft studio/server properties.
+3. Adding the required classpath entries to the classpath in the jaspersoft project.
+
+The first step is the same for Studio and Server:
+
+### Deploying the plugin artifact to the local .m2 repository
+This can be done by either running
+```sh
+mvn clean install
+```
+from the project root.
+
+Or opening this project in any IDE with maven support (e.g. IntelliJ) and executing the install phase.
+
+### JasperSoft Studio
 #### Add Jaspersoft Property
 Jaspersoft Studio Properties can either be set for the entire ***workspace*** or a specific ***project***:
 
@@ -52,6 +69,104 @@ Go to `Java Build Path` and select `Libraries`.
 
 Add all the required jar files here.
 (see Required Jar Files)
+
+This can be semi-automated via the maven eclipse goal:
+1. From this project root run `mvn eclipse:eclipse`
+2. Open the generated .classpath file, which should look similar to
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+  <classpathentry kind="src" path="src/test/java" output="target/test-classes" including="**/*.java"/>
+  <classpathentry kind="src" path="src/test/resources" output="target/test-classes" excluding="**/*.java"/>
+  <classpathentry kind="src" path="src/main/java" including="**/*.java"/>
+  <classpathentry kind="output" path="target/classes"/>
+  <classpathentry kind="var" path="M2_REPO/javax/inject/javax.inject/1/javax.inject-1.jar"/>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+  <classpathentry kind="var" path="M2_REPO/net/sf/jasperreports/jasperreports/6.17.0/jasperreports-6.17.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/commons-beanutils/commons-beanutils/1.9.4/commons-beanutils-1.9.4.jar"/>
+  <classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/commons-digester/commons-digester/2.1/commons-digester-2.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/commons/commons-collections4/4.2/commons-collections4-4.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jfree/jcommon/1.0.23/jcommon-1.0.23.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jfree/jfreechart/1.0.19/jfreechart-1.0.19.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/eclipse/jdt/ecj/3.21.0/ecj-3.21.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/codehaus/castor/castor-xml/1.4.1/castor-xml-1.4.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/codehaus/castor/castor-core/1.4.1/castor-core-1.4.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-core/2.12.2/jackson-core-2.12.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-databind/2.12.2/jackson-databind-2.12.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-annotations/2.12.2/jackson-annotations-2.12.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/itextpdf/kernel/7.1.14/kernel-7.1.14.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/itextpdf/io/7.1.14/io-7.1.14.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/slf4j/slf4j-api/1.7.30/slf4j-api-1.7.30.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/bouncycastle/bcpkix-jdk15on/1.67/bcpkix-jdk15on-1.67.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/bouncycastle/bcprov-jdk15on/1.67/bcprov-jdk15on-1.67.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/itextpdf/layout/7.1.14/layout-7.1.14.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/itextpdf/pdfa/7.1.14/pdfa-7.1.14.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/itextpdf/forms/7.1.14/forms-7.1.14.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/itextpdf/svg/7.1.14/svg-7.1.14.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/itextpdf/styled-xml-parser/7.1.14/styled-xml-parser-7.1.14.jar"/>
+  <classpathentry kind="var" path="M2_REPO/commons-codec/commons-codec/1.5/commons-codec-1.5.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/testng/testng/6.8.1/testng-6.8.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/junit/junit/4.10/junit-4.10.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/beanshell/bsh/2.0b4/bsh-2.0b4.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/beust/jcommander/1.27/jcommander-1.27.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/yaml/snakeyaml/1.6/snakeyaml-1.6.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/lowagie/itext/2.1.7.js8/itext-2.1.7.js8.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/xmlgraphics/batik-svggen/1.11/batik-svggen-1.11.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/xmlgraphics/batik-awt-util/1.11/batik-awt-util-1.11.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/xmlgraphics/batik-util/1.11/batik-util-1.11.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/xmlgraphics/batik-constants/1.11/batik-constants-1.11.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/xmlgraphics/batik-i18n/1.11/batik-i18n-1.11.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/xmlgraphics/xmlgraphics-commons/2.3/xmlgraphics-commons-2.3.jar"/>
+  <classpathentry kind="var" path="M2_REPO/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/xmlgraphics/batik-dom/1.11/batik-dom-1.11.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/xmlgraphics/batik-css/1.11/batik-css-1.11.jar"/>
+  <classpathentry kind="var" path="M2_REPO/xml-apis/xml-apis-ext/1.3.04/xml-apis-ext-1.3.04.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/xmlgraphics/batik-ext/1.11/batik-ext-1.11.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/xmlgraphics/batik-xml/1.11/batik-xml-1.11.jar"/>
+  <classpathentry kind="var" path="M2_REPO/xalan/xalan/2.7.2/xalan-2.7.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/xalan/serializer/2.7.2/serializer-2.7.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/xml-apis/xml-apis/1.3.04/xml-apis-1.3.04.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/xmlgraphics/batik-anim/1.11/batik-anim-1.11.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/xmlgraphics/batik-parser/1.11/batik-parser-1.11.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/xmlgraphics/batik-svg-dom/1.11/batik-svg-dom-1.11.jar"/>
+  <classpathentry kind="var" path="M2_REPO/net/sf/jasperreports/jasperreports-fonts/master-SNAPSHOT/jasperreports-fonts-master-SNAPSHOT.jar"/>
+</classpath>
+```
+
+3. Copy all the entries from `<classpathentry kind="var" path="M2_REPO/net/sf/jasperreports/jasperreports/6.17.0/jasperreports-6.17.0.jar"/>` downwards.
+4. Open your Jaspersoft Workspace and navigate to the project you intend to use the plugin with.
+5. Open the .classpath in that project
+6. Paste the copied `<classpathentry>` tags beneath the existing ones.
+7. If you refresh the Buildpath in the Studio they should now appear.
+8. **IMPORTANT** now go to `Window -> Preferences -> Java -> Build Path -> Classpath Variables`
+   and reate a new classpath variable called M2_REPO and point it towards your .m2 user repository (the one where this project was deployed using mvn install previously).
+   It's usually under %UserProfile%/.m2/repository  
+   This will ensure that the placeholders in the added classpath entries gets resolved correctly to the maven repository.
+10. Now all the dependencies for the plugin are in the classpath, but the plugin jar needs to be added manually:  
+ - Go back to `Project -> Properties -> Java Build Path -> Libraries` and select classpath.
+ - Click `Add External Jars...` and navigate to the place where the artifact was deployed in step one.
+   To find that location check the output from mvn clean install right above the BUILD SUCCESS.
+
+```sh
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ jasperreports-pdf-lib7 ---
+[INFO] Installing /home/ferdinand/Downloads/jasperreports-pdf-lib7/target/jasperreports-pdf-lib7-1.0.0-SNAPSHOT.jar to /home/ferdinand/.m2/repository/com/jaspersoft/jasperreports/jasperreports-pdf-lib7/1.0.0-SNAPSHOT/jasperreports-pdf-lib7-1.0.0-SNAPSHOT.jar
+[INFO] Installing /home/ferdinand/Downloads/jasperreports-pdf-lib7/pom.xml to /home/ferdinand/.m2/repository/com/jaspersoft/jasperreports/jasperreports-pdf-lib7/1.0.0-SNAPSHOT/jasperreports-pdf-lib7-1.0.0-SNAPSHOT.pom
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.929 s
+[INFO] Finished at: 2022-01-24T17:51:47+01:00
+[INFO] ------------------------------------------------------------------------
+```
+
+   The line with Installing (...) to (...)/jasperreports-pdf-lib7-1.0.0-SNAPSHOT.jar is the important one.
+
+Now everything is setup and the plugin can be used.
 
 ### Jaspersoft Reports Server
 
