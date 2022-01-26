@@ -144,7 +144,7 @@ This can be semi-automated via the maven eclipse goal:
 6. Paste the copied `<classpathentry>` tags beneath the existing ones.
 7. If you refresh the Buildpath in the Studio they should now appear.
 8. **IMPORTANT** now go to `Window -> Preferences -> Java -> Build Path -> Classpath Variables`
-   and reate a new classpath variable called M2_REPO and point it towards your .m2 user repository (the one where this project was deployed using mvn install previously).
+   and create a new classpath variable called M2_REPO and point it towards your .m2 user repository (the one where this project was deployed using mvn install previously).
    It's usually under %UserProfile%/.m2/repository  
    This will ensure that the placeholders in the added classpath entries gets resolved correctly to the maven repository.
 10. Now all the dependencies for the plugin are in the classpath, but the plugin jar needs to be added manually:  
