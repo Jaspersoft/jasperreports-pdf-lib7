@@ -185,14 +185,14 @@ Now everything is setup and the plugin can be used.
 
 The jar files either need to be added to the classpath or copied to the `lib` folder in apache-tomcat:
 
-### Copy jar files to library folder
+#### Copy jar files to library folder
 ```sh
 mvn install dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=<JasperServerRoot>/apache-tomcat/lib
 cp target/jasperreports-pdf-lib7-1.0.0-SNAPSHOT.jar <JasperServerRoot>/apache-tomcat/lib
 ```
 (<JasperServerRoot> must be replaced with the directory of the Jasperserver installation)
 
-## Via Classpath Entry:
+#### Via Classpath Entry:
 1. Generate the classpath:
 
     Execute
