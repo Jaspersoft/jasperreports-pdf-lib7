@@ -170,10 +170,62 @@ Now everything is setup and the plugin can be used.
 
 ### Jaspersoft Reports Server
 
-~~~java
-// TODO
-~~~
+1. Setting the property
 
+    In the file
+    ```
+    <JasperServerRoot>/apache-tomcat/webapps/jasperserver-pro/WEB-INF/classes/jasperreports.properties
+    ```
+    add the line
+    ```jproperties
+    net.sf.jasperreports.export.pdf.producer.factory=com.jaspersoft.jasperreports.export.pdf.modern.ModernPdfProducerFactory
+    ```
+
+2. Classpath
+
+The jar files either need to be added to the classpath or copied to the `lib` folder in apache-tomcat:
+
+### Copy jar files to library folder
+```sh
+mvn install dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=<JasperServerRoot>/apache-tomcat/lib
+cp target/jasperreports-pdf-lib7-1.0.0-SNAPSHOT.jar <JasperServerRoot>/apache-tomcat/lib
+```
+(<JasperServerRoot> must be replaced with the directory of the Jasperserver installation)
+
+## Via Classpath Entry:
+1. Generate the classpath:
+
+    Execute
+    ```sh
+    mvn dependency:build-classpath -Dmdep.outputFile=cp.txt -Dinclude-scope=runtime
+    ```
+    to write the classpath to cp.txt or
+    ```sh
+    mvn dependency:build-classpath -Dinclude-scope=runtime
+    ```
+    to print the classpath to the terminal.
+
+    Additionally the artifact jar file needs to be added to the classpath - it's location is logged during the install phase:
+    ```sh
+    ...    
+    [INFO] Installing /home/ferdinand/Downloads/jasperreports-pdf-lib7/target/jasperreports-pdf-lib7-1.0.0-SNAPSHOT.jar to /home/ferdinand/.m2/repository/com/jaspersoft/jasperreports/jasperreports-pdf-lib7/1.0.0-SNAPSHOT/jasperreports-pdf-lib7-1.0.0-SNAPSHOT.jar
+    ...
+    ```
+    
+2. Export the classpath:
+  - **Linux**: In `$JASPERSERVER_DIR/apache-tomcat/bin/setenv.sh`
+    ```sh
+    ...
+    export CLASSPATH = <insert classpath here>
+    ...
+    ```
+  - **Windows**: In `$JASPERSERVER_DIR/apache-tomcat/bin/setenv.bat`
+    ```bat
+    ...
+    set CLASSPATH = <insert classpath here>
+    ...
+    ```
+  
 ### Required Jar Files
 
 The following jars need to present on the classpath:
