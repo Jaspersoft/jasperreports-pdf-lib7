@@ -20,7 +20,7 @@ package com.jaspersoft.jasperreports.export.pdf.modern;
 
 import com.itextpdf.layout.element.ILeafElement;
 import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.property.BaseDirection;
+import com.itextpdf.layout.properties.BaseDirection;
 
 import net.sf.jasperreports.engine.JRRuntimeException;
 import net.sf.jasperreports.export.pdf.PdfChunk;

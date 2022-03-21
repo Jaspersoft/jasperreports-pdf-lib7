@@ -129,42 +129,42 @@
 	    <dependency>
 	        <groupId>com.itextpdf</groupId>
 	        <artifactId>kernel</artifactId>
-	        <version>7.1.14</version>
+	        <version>7.2.1</version>
 	        <scope>compile</scope>
 			<optional>false</optional>
 	    </dependency>
 	    <dependency>
 	        <groupId>com.itextpdf</groupId>
 	        <artifactId>io</artifactId>
-	        <version>7.1.14</version>
+	        <version>7.2.1</version>
 	        <scope>compile</scope>
 			<optional>false</optional>
 	    </dependency>
 	    <dependency>
 	        <groupId>com.itextpdf</groupId>
 	        <artifactId>layout</artifactId>
-	        <version>7.1.14</version>
+	        <version>7.2.1</version>
 	        <scope>compile</scope>
 			<optional>false</optional>
 	    </dependency>
 		<dependency>
 	        <groupId>com.itextpdf</groupId>
 	        <artifactId>pdfa</artifactId>
-	        <version>7.1.14</version>
+	        <version>7.2.1</version>
 	        <scope>compile</scope>
 			<optional>false</optional>
 	    </dependency>
 		<dependency>
 			<groupId>com.itextpdf</groupId>
 			<artifactId>forms</artifactId>
-			<version>7.1.14</version>
+			<version>7.2.1</version>
 			<scope>compile</scope>
 			<optional>false</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.itextpdf</groupId>
 			<artifactId>svg</artifactId>
-			<version>7.1.14</version>
+			<version>7.2.1</version>
 			<scope>compile</scope>
 			<optional>false</optional>
 		</dependency>
