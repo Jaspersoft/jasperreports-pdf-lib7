@@ -26,7 +26,7 @@ import com.itextpdf.io.font.FontProgram;
 import com.itextpdf.io.font.FontProgramFactory;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
-
+import com.itextpdf.kernel.font.PdfFontFactory.EmbeddingStrategy;
 import net.sf.jasperreports.engine.JRRuntimeException;
 
 /**
@@ -86,7 +86,7 @@ public class PdfFontCache
 			FontProgram fontProgram = getCachedFontProgram(fontKey);
 			if (fontProgram != null)
 			{
-				pdfFont = PdfFontFactory.createFont(fontProgram, pdfEncoding, isPdfEmbedded);
+				pdfFont = PdfFontFactory.createFont(fontProgram, pdfEncoding, isPdfEmbedded ? EmbeddingStrategy.PREFER_EMBEDDED : EmbeddingStrategy.PREFER_NOT_EMBEDDED);
 				pdfFont = cacheFont(fontKey, pdfFont);
 			}
 		}
@@ -111,7 +111,7 @@ public class PdfFontCache
 			fontProgram = cacheFontProgram(fontKey, fontProgram);
 		}
 		
-		PdfFont pdfFont = PdfFontFactory.createFont(fontProgram, pdfEncoding, isPdfEmbedded);
+		PdfFont pdfFont = PdfFontFactory.createFont(fontProgram, pdfEncoding, isPdfEmbedded ? EmbeddingStrategy.PREFER_EMBEDDED : EmbeddingStrategy.PREFER_NOT_EMBEDDED);
 		pdfFont = cacheFont(fontKey, pdfFont);
 		return pdfFont;
 	}

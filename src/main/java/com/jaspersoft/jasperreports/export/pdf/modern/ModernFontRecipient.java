@@ -24,6 +24,7 @@ import java.io.IOException;
 import com.itextpdf.io.font.constants.FontStyles;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.font.PdfFontFactory.EmbeddingStrategy;
 
 import net.sf.jasperreports.engine.JRRuntimeException;
 import net.sf.jasperreports.export.pdf.FontRecipient;
@@ -61,7 +62,8 @@ public class ModernFontRecipient implements FontRecipient
 	{
 		try
 		{
-			PdfFont pdfFont = PdfFontFactory.createRegisteredFont(pdfFontName, pdfEncoding, isPdfEmbedded, 
+			PdfFont pdfFont = PdfFontFactory.createRegisteredFont(pdfFontName, pdfEncoding, 
+					isPdfEmbedded ? EmbeddingStrategy.PREFER_EMBEDDED : EmbeddingStrategy.PREFER_NOT_EMBEDDED,
 					toITextFontStyle(pdfFontStyle));
 			
 			// check if FontFactory didn't find the font
