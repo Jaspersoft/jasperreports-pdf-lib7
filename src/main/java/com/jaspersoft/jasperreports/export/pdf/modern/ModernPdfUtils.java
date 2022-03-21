@@ -20,7 +20,7 @@ package com.jaspersoft.jasperreports.export.pdf.modern;
 
 import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.DeviceRgb;
-import com.itextpdf.layout.property.TextAlignment;
+import com.itextpdf.layout.properties.TextAlignment;
 
 import net.sf.jasperreports.engine.JRRuntimeException;
 import net.sf.jasperreports.export.pdf.PdfTextAlignment;
