@@ -116,7 +116,7 @@
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports</artifactId>
-			<version>6.17.0</version>
+			<version>7.0.4</version>
 			<scope>compile</scope>
 			<optional>false</optional>
 			<exclusions>
